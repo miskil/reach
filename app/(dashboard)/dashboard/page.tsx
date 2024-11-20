@@ -14,6 +14,6 @@ export default async function SettingsPage() {
   if (!teamData) {
     throw new Error('Team not found');
   }
-
-  return <Settings teamData={teamData} />;
+  return (<p>{teamData.name} Site</p>)
+  //return <Settings teamData={teamData} />;
 }

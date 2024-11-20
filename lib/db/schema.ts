@@ -5,11 +5,38 @@ import {
   text,
   timestamp,
   integer,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
+export const tenants = pgTable('tenants', {
+    id: serial('id').unique(),
+    tenant: varchar('tenant', { length: 100 }).primaryKey().notNull(), 
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+ })
+  
+ export const siteheader = pgTable('siteheader', {
+  id: serial('id').primaryKey(),
+    siteId: varchar('siteId').references(()=>tenants.tenant),
+    siteiconURL: varchar('siteiconURL', { length: 400 }), 
+    siteHeader: varchar('siteHeader', { length: 400 }), 
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+ })
+
+
+export const tiles = pgTable('tiles', {
+    id: serial('id').primaryKey(),
+    siteId: varchar('siteId').references(()=>tenants.tenant),
+    media: varchar('media', { length: 20 }).notNull().default('image'), //image or video
+    mediaURL: varchar('mediaURL', { length: 400 }), 
+    linkURL: varchar('linkURL', { length: 400 }), 
+    shortDescription: varchar('mediaURL', { length: 400 }),
+
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+ })
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
+  siteId: varchar('siteId').references(()=>tenants.tenant),
   name: varchar('name', { length: 100 }),
   email: varchar('email', { length: 255 }).notNull().unique(),
   passwordHash: text('password_hash').notNull(),
@@ -112,6 +139,11 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
+
+export type Tenant = typeof tenants.$inferSelect;
+export type NewTenant = typeof tenants.$inferInsert;
+export type NewSiteHeader = typeof siteheader.$inferInsert;;
+export type SiteHeader = typeof siteheader.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Team = typeof teams.$inferSelect;

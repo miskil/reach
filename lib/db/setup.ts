@@ -111,6 +111,7 @@ async function setupLocalPostgres() {
   }
 
   console.log('Creating docker-compose.yml file...');
+  /** 
   const dockerComposeContent = `
 services:
   postgres:
@@ -145,6 +146,7 @@ volumes:
     );
     process.exit(1);
   }
+  **/
 }
 
 async function getStripeSecretKey(): Promise<string> {
@@ -194,11 +196,11 @@ async function writeEnvFile(envVars: Record<string, string>) {
 }
 
 async function main() {
-  await checkStripeCLI();
+  //await checkStripeCLI();
 
-  const POSTGRES_URL = await getPostgresURL();
-  const STRIPE_SECRET_KEY = await getStripeSecretKey();
-  const STRIPE_WEBHOOK_SECRET = await createStripeWebhook();
+  const POSTGRES_URL =  'postgres://postgres:MitraNet1!@localhost:5432/reachdb' // await getPostgresURL();
+  const STRIPE_SECRET_KEY = '' //await getStripeSecretKey();
+  const STRIPE_WEBHOOK_SECRET = '' //await createStripeWebhook();
   const BASE_URL = 'http://localhost:3000';
   const AUTH_SECRET = generateAuthSecret();
 

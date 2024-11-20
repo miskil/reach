@@ -3,16 +3,24 @@
 import { z } from 'zod';
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
+import fs from 'fs';
+import path from 'path';
+
 import {
   User,
   users,
   teams,
+  tenants,
+  siteheader,
+  SiteHeader,
   teamMembers,
   activityLogs,
   type NewUser,
   type NewTeam,
   type NewTeamMember,
   type NewActivityLog,
+  type NewTenant,
+  type NewSiteHeader,
   ActivityType,
   invitations,
 } from '@/lib/db/schema';
@@ -21,10 +29,15 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createCheckoutSession } from '@/lib/payments/stripe';
 import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import { revalidatePath } from 'next/cache';
 import {
   validatedAction,
   validatedActionWithUser,
 } from '@/lib/auth/middleware';
+interface UpdateOrCreateSiteHeader {
+  siteid: string;
+  newHeader: string;
+}
 
 async function logActivity(
   teamId: number | null | undefined,
@@ -44,10 +57,224 @@ async function logActivity(
   await db.insert(activityLogs).values(newActivity);
 }
 
+
+
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
   password: z.string().min(8).max(100),
 });
+
+const siteIdSchema = z.object({
+  tenant: z.string().min(3).max(255),
+  
+});
+export type SiteDataInput = {
+  siteId: string
+  siteIcon?: File
+  siteHeader: string
+}
+
+
+// Function to get siteId - a placeholder for your siteId fetch logic
+export async function getSiteId() {
+  // This is a placeholder. Replace with your actual logic to fetch siteId.
+  const siteId = '123'; // Mock siteId
+  return siteId;
+}
+
+// Server action to update header and icon in the database
+export async function updateSiteParameters(data: FormData) {
+  const siteHeader = data.get('siteHeader') as string;
+  const file = data.get('icon') as File | null;
+  const siteId = data.get('siteId') as string;
+
+  if (!file || !siteId || !siteHeader) {
+    return { error: 'Missing required fields' };
+  }
+
+  // Set up the file path for the icon
+  const uploadsDir = path.join(process.cwd(), 'public/uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  const iconPath = `${Date.now()}-${file.name}`;
+  const filePath = path.join(uploadsDir, iconPath);
+
+  // Save the file to the filesystem
+  await fs.promises.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+
+  // Update the database
+  await db
+    .update(siteheader)
+    .set({ siteHeader, siteiconURL: filePath })
+    .where(eq(siteheader.siteId, (siteId)));
+
+  // Revalidate the page to show updates
+  revalidatePath('/');
+
+  return { message: 'Site header updated successfully' };
+}
+
+export async function getUserSiteId()
+{
+ const User = await getUser() ?? "";
+  
+
+  let slug = User ? User.siteId || "" : "";
+
+  //const data = await getSiteHeaderElements(slug||"" ) ;
+
+  return(slug);
+
+}
+export async function isSiteRegistered (siteId:string){
+    // Fetch tenant record from the tenants table
+  const availTenant = await db
+    .select({
+      tenant: tenants.tenant, // Assuming 'tenant' is a column in the 'tenants' table
+    })
+    .from(tenants)
+    .where(eq(tenants.tenant, siteId))
+    .limit(1);
+
+  // Check if the tenant exists
+  if (availTenant.length === 0) { // availTenant will be an array, so check its length
+    return false;
+  }
+
+  // If tenant exists, proceed with other logic or return success
+  return true;
+};
+
+export async function getHeader(siteId:string) {
+  // This is a placeholder. Replace with your actual logic to fetch siteId.
+ 
+  return (siteId);
+}
+
+export async function getSiteHeaderElements(siteId:string){
+    
+     
+  
+     const siteHeaderElements = await db
+    .select()
+    .from(siteheader)
+    .where(and(eq(siteheader.siteId, siteId)))
+    .limit(1);
+    
+
+  if (siteHeaderElements.length === 0) {
+    return null ;
+
+  }
+
+  return siteHeaderElements[0];
+}
+
+
+
+export async function upsertSiteData(data: FormData) {
+  const siteId = data.get('siteId')
+  const siteHeader = data.get('siteHeader');
+  const siteicon = data.get('siteIcon')
+var iconPath, filePath;
+
+  if ( !siteId || !siteHeader) {
+    return { error: 'Missing required fields' };
+  }
+  if (siteicon)
+  {
+  // Set up the file path for the icon
+  const uploadsDir = path.join(process.cwd(), 'public');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  iconPath = `/uploads/${Date.now()}-${siteicon.name}`;
+  filePath = path.join(uploadsDir, iconPath);
+
+  // Save the file to the filesystem
+  await fs.promises.writeFile(filePath, Buffer.from(await siteicon.arrayBuffer()));
+}
+  try {
+    // Check if the site already exists
+    const existingSite = await db
+      .select()
+      .from(siteheader)
+      .where(eq(siteheader.siteId, siteId))
+      .then((rows) => rows[0])
+
+    if (existingSite) {
+      // Update existing record
+      await db
+        .update(siteheader)
+        .set({ siteiconURL:iconPath, siteHeader })
+        .where(eq(siteheader.siteId, siteId))
+    } else {
+      // Insert new record
+      await db.insert(siteheader).values({
+        siteId,
+        siteiconURL:iconPath,
+        siteHeader,
+        
+      })
+    }
+  } catch (error) {
+    console.error("Database Error:", error)
+    throw new Error("Failed to create or update site data")
+  }
+}
+
+export const verifyAvailability =  async (tenant: string ) => {
+  
+
+  // Fetch tenant record from the tenants table
+  const availTenant = await db
+    .select({
+      tenant: tenants.tenant, // Assuming 'tenant' is a column in the 'tenants' table
+    })
+    .from(tenants)
+    .where(eq(tenants.tenant, tenant))
+    .limit(1);
+
+  // Check if the tenant exists
+  if (availTenant.length === 0) { // availTenant will be an array, so check its length
+    return { success: 'Site URL is available.' };
+  }
+
+  // If tenant exists, proceed with other logic or return success
+  return { error: 'Site URL already taken. Try other name' };
+};
+
+
+export const createTenant =  async (tenant: string ) => {
+  
+
+  const newTenant: NewTenant = {
+  
+    tenant
+    
+  };
+
+ 
+  const [createdTenant] = await db.insert(tenants).values(newTenant).returning();
+
+  if (!createdTenant) {
+    return { error: 'Site URL already taken. Try other name' };
+  }
+ const user = await getUser();
+  if(user){
+     await db
+        .update(users)
+        .set({ siteId: newTenant.tenant })
+        .where(eq(users.email, user.email));
+
+  }
+
+  return  { success: 'Site URL Created.' };
+};
+
 
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
@@ -55,6 +282,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const userWithTeam = await db
     .select({
       user: users,
+      
       team: teams,
     })
     .from(users)
@@ -89,7 +317,10 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return createCheckoutSession({ team: foundTeam, priceId });
   }
 
-  redirect('/dashboard');
+  if (foundUser.siteId)
+    redirect(`/${foundUser.siteId}`);
+  redirect ('/registersite') 
+    
 });
 
 const signUpSchema = z.object({
@@ -198,7 +429,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     return createCheckoutSession({ team: createdTeam, priceId });
   }
 
-  redirect('/dashboard');
+  redirect('/registersite');
 });
 
 export async function signOut() {

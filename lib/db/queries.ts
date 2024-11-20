@@ -1,6 +1,6 @@
 import { desc, and, eq, isNull } from 'drizzle-orm';
 import { db } from './drizzle';
-import { activityLogs, teamMembers, teams, users } from './schema';
+import { activityLogs, siteheader, teamMembers, teams, users } from './schema';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
 
@@ -35,6 +35,8 @@ export async function getUser() {
 
   return user[0];
 }
+
+
 
 export async function getTeamByStripeCustomerId(customerId: string) {
   const result = await db

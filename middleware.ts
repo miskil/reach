@@ -5,22 +5,39 @@ import { signToken, verifyToken } from '@/lib/auth/session';
 const protectedRoutes = '/dashboard';
 
 export async function middleware(request: NextRequest) {
+  const url = new URL(request.url);
   const { pathname } = request.nextUrl;
+  const origin = url.origin;
+  const pathSegments = pathname ? pathname.split('/') : [];
+  const siteId =  pathSegments[1] || ''; // Assuming siteId is the second segment
+  
+  // Step 1: Add custom headers
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-url', request.url);
+  requestHeaders.set('x-origin', origin);
+  requestHeaders.set('x-siteid', siteId);
+  
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = pathname.startsWith(protectedRoutes);
 
+  // Step 2: Handle protected routes and session validation
   if (isProtectedRoute && !sessionCookie) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-  let res = NextResponse.next();
+  let response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 
+  // Step 3: Update session token if it exists
   if (sessionCookie) {
     try {
       const parsed = await verifyToken(sessionCookie.value);
       const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-      res.cookies.set({
+      response.cookies.set({
         name: 'session',
         value: await signToken({
           ...parsed,
@@ -33,16 +50,17 @@ export async function middleware(request: NextRequest) {
       });
     } catch (error) {
       console.error('Error updating session:', error);
-      res.cookies.delete('session');
+      response.cookies.delete('session');
       if (isProtectedRoute) {
         return NextResponse.redirect(new URL('/sign-in', request.url));
       }
     }
   }
 
-  return res;
+  return response;
 }
 
 export const config = {
+  // Match all routes except API, static assets, and favicon
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

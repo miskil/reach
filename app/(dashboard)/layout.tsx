@@ -1,9 +1,9 @@
 'use client';
-
+import { ReactNode } from 'react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut } from 'lucide-react';
+import { MousePointerClick, CircleIcon, Home, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/lib/auth';
-import { signOut } from '@/app/(login)/actions';
+import { signOut } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 
 function Header() {
@@ -30,8 +30,8 @@ function Header() {
     <header className="border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center">
-          <CircleIcon className="h-6 w-6 text-orange-500" />
-          <span className="ml-2 text-xl font-semibold text-gray-900">ACME</span>
+          <MousePointerClick className="h-6 w-6 text-orange-500" />
+          <span className="ml-2 text-xl font-semibold text-gray-900">reachpoint</span>
         </Link>
         <div className="flex items-center space-x-4">
           <Link
@@ -84,11 +84,16 @@ function Header() {
   );
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <section className="flex flex-col min-h-screen">
-      <Header />
-      {children}
-    </section>
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+     <Header />
+
+      {/* Content */}
+      <main className="flex-1 p-4">
+        {children}
+      </main>
+    </div>
   );
 }
