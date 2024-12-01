@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { z } from 'zod';
-import { and, eq, sql } from 'drizzle-orm';
-import { db } from '@/lib/db/drizzle';
-import fs from 'fs';
-import path from 'path';
+import { z } from "zod";
+import { and, eq, sql } from "drizzle-orm";
+import { db } from "@/lib/db/drizzle";
+import fs from "fs";
+import path from "path";
 
 import {
   User,
@@ -23,17 +23,17 @@ import {
   type NewSiteHeader,
   ActivityType,
   invitations,
-} from '@/lib/db/schema';
-import { comparePasswords, hashPassword, setSession } from '@/lib/auth/session';
-import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createCheckoutSession } from '@/lib/payments/stripe';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
-import { revalidatePath } from 'next/cache';
+} from "@/lib/db/schema";
+import { comparePasswords, hashPassword, setSession } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { createCheckoutSession } from "@/lib/payments/stripe";
+import { getUser, getUserWithTeam } from "@/lib/db/queries";
+import { revalidatePath } from "next/cache";
 import {
   validatedAction,
   validatedActionWithUser,
-} from '@/lib/auth/middleware';
+} from "@/lib/auth/middleware";
 interface UpdateOrCreateSiteHeader {
   siteid: string;
   newHeader: string;
@@ -52,12 +52,10 @@ async function logActivity(
     teamId,
     userId,
     action: type,
-    ipAddress: ipAddress || '',
+    ipAddress: ipAddress || "",
   };
   await db.insert(activityLogs).values(newActivity);
 }
-
-
 
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
@@ -66,34 +64,32 @@ const signInSchema = z.object({
 
 const siteIdSchema = z.object({
   tenant: z.string().min(3).max(255),
-  
 });
 export type SiteDataInput = {
-  siteId: string
-  siteIcon?: File
-  siteHeader: string
-}
-
+  siteId: string;
+  siteIcon?: File;
+  siteHeader: string;
+};
 
 // Function to get siteId - a placeholder for your siteId fetch logic
 export async function getSiteId() {
   // This is a placeholder. Replace with your actual logic to fetch siteId.
-  const siteId = '123'; // Mock siteId
+  const siteId = "123"; // Mock siteId
   return siteId;
 }
 
 // Server action to update header and icon in the database
 export async function updateSiteParameters(data: FormData) {
-  const siteHeader = data.get('siteHeader') as string;
-  const file = data.get('icon') as File | null;
-  const siteId = data.get('siteId') as string;
+  const siteHeader = data.get("siteHeader") as string;
+  const file = data.get("icon") as File | null;
+  const siteId = data.get("siteId") as string;
 
   if (!file || !siteId || !siteHeader) {
-    return { error: 'Missing required fields' };
+    return { error: "Missing required fields" };
   }
 
   // Set up the file path for the icon
-  const uploadsDir = path.join(process.cwd(), 'public/uploads');
+  const uploadsDir = path.join(process.cwd(), "public/uploads");
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
@@ -108,28 +104,25 @@ export async function updateSiteParameters(data: FormData) {
   await db
     .update(siteheader)
     .set({ siteHeader, siteiconURL: filePath })
-    .where(eq(siteheader.siteId, (siteId)));
+    .where(eq(siteheader.siteId, siteId));
 
   // Revalidate the page to show updates
-  revalidatePath('/');
+  revalidatePath("/");
 
-  return { message: 'Site header updated successfully' };
+  return { message: "Site header updated successfully" };
 }
 
-export async function getUserSiteId()
-{
- const User = await getUser() ?? "";
-  
+export async function getUserSiteId() {
+  const User = (await getUser()) ?? "";
 
   let slug = User ? User.siteId || "" : "";
 
   //const data = await getSiteHeaderElements(slug||"" ) ;
 
-  return(slug);
-
+  return slug;
 }
-export async function isSiteRegistered (siteId:string){
-    // Fetch tenant record from the tenants table
+export async function isSiteRegistered(siteId: string) {
+  // Fetch tenant record from the tenants table
   const availTenant = await db
     .select({
       tenant: tenants.tenant, // Assuming 'tenant' is a column in the 'tenants' table
@@ -139,96 +132,152 @@ export async function isSiteRegistered (siteId:string){
     .limit(1);
 
   // Check if the tenant exists
-  if (availTenant.length === 0) { // availTenant will be an array, so check its length
+  if (availTenant.length === 0) {
+    // availTenant will be an array, so check its length
     return false;
   }
 
   // If tenant exists, proceed with other logic or return success
   return true;
-};
-
-export async function getHeader(siteId:string) {
-  // This is a placeholder. Replace with your actual logic to fetch siteId.
- 
-  return (siteId);
 }
 
-export async function getSiteHeaderElements(siteId:string){
-    
-     
-  
-     const siteHeaderElements = await db
+export async function getHeader(siteId: string) {
+  // This is a placeholder. Replace with your actual logic to fetch siteId.
+
+  return siteId;
+}
+
+export async function getSiteHeaderElements(siteId: string) {
+  const siteHeaderElements = await db
     .select()
     .from(siteheader)
     .where(and(eq(siteheader.siteId, siteId)))
     .limit(1);
-    
 
   if (siteHeaderElements.length === 0) {
-    return null ;
-
+    return null;
   }
 
   return siteHeaderElements[0];
 }
 
+export async function deleteImage(imagePath: string) {
+  try {
+    const filePath = path.join(process.cwd(), "public", imagePath);
+    await fs.promises.rm(filePath);
+  } catch {
+    return "error";
+  }
+  return "Deleted";
+}
 
+async function uploadImage(image: File | null) {
+  let iconPath: string = "",
+    filePath: string = "";
+
+  try {
+    if (image) {
+      // Set up the file path for the icon
+      const uploadsDir = path.join(process.cwd(), "public");
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      iconPath = `/uploads/${Date.now()}-${image.name}`;
+      filePath = path.join(uploadsDir, iconPath);
+
+      // Save the file to the filesystem
+      await fs.promises.writeFile(
+        filePath,
+        Buffer.from(await image.arrayBuffer())
+      );
+    }
+  } catch {
+    return "";
+  }
+  return iconPath;
+}
 
 export async function upsertSiteData(data: FormData) {
-  const siteId = data.get('siteId')
-  const siteHeader = data.get('siteHeader');
-  const siteicon = data.get('siteIcon')
-var iconPath, filePath;
+  const siteId = data.get("siteId") as string | null;
+  const siteHeader = data.get("siteHeader") as string | null;
+  const siteIcon = data.get("siteIcon") as File | null;
+  const headerTextColor = data.get("headerTextColor") as string | null;
+  const headerFontSize = data.get("headerFontSize") as string | null;
+  const headerBkgColor = data.get("headerBkgColor") as string | null;
+  const headerBkgImage = data.get("headerBkgImage") as string | null;
+  const existingiconURL = data.get("existingiconURL") as string | null;
+  const existingbgImageURL = data.get("existingbgImageURL") as string | null;
 
-  if ( !siteId || !siteHeader) {
-    return { error: 'Missing required fields' };
+  existingiconURL;
+  existingbgImageURL;
+
+  if (!siteId || !siteHeader) {
+    return { error: "Missing required fields" };
   }
-  if (siteicon)
-  {
-  // Set up the file path for the icon
-  const uploadsDir = path.join(process.cwd(), 'public');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+
+  let siteIconPath = "",
+    bkgImagePath = "";
+
+  if (siteIcon) {
+    try {
+      siteIconPath = await uploadImage(siteIcon);
+    } catch (error) {
+      console.error("Image Upload Error:", error);
+      return { error: "Failed to upload site icon" };
+    }
   }
 
-  iconPath = `/uploads/${Date.now()}-${siteicon.name}`;
-  filePath = path.join(uploadsDir, iconPath);
+  if (headerBkgImage) {
+    try {
+      bkgImagePath = await uploadImage(headerBkgImage);
+    } catch (error) {
+      console.error("Image Upload Error:", error);
+      return { error: "Failed to upload site icon" };
+    }
+  }
 
-  // Save the file to the filesystem
-  await fs.promises.writeFile(filePath, Buffer.from(await siteicon.arrayBuffer()));
-}
+  const updateData = {
+    siteiconURL: siteIconPath,
+    siteHeader,
+    headerTextColor,
+    headerFontSize,
+    headerBkgColor,
+    headerBkgImageURL: bkgImagePath,
+  };
+
+  Object.keys(updateData).forEach((key) => {
+    if (updateData[key as keyof typeof updateData] === undefined) {
+      delete updateData[key as keyof typeof updateData];
+    }
+  });
+
   try {
-    // Check if the site already exists
     const existingSite = await db
       .select()
       .from(siteheader)
       .where(eq(siteheader.siteId, siteId))
-      .then((rows) => rows[0])
+      .then((rows) => rows[0]);
 
     if (existingSite) {
-      // Update existing record
       await db
         .update(siteheader)
-        .set({ siteiconURL:iconPath, siteHeader })
-        .where(eq(siteheader.siteId, siteId))
+        .set(updateData)
+        .where(eq(siteheader.siteId, siteId));
     } else {
-      // Insert new record
-      await db.insert(siteheader).values({
-        siteId,
-        siteiconURL:iconPath,
-        siteHeader,
-        
-      })
+      await db.insert(siteheader).values({ siteId, ...updateData });
     }
   } catch (error) {
-    console.error("Database Error:", error)
-    throw new Error("Failed to create or update site data")
+    console.error("Database Error:", error);
+    return {
+      error: "Failed to create or update site data. Please try again later.",
+    };
   }
+
+  return { success: true };
 }
 
-export const verifyAvailability =  async (tenant: string ) => {
-  
-
+export const verifyAvailability = async (tenant: string) => {
   // Fetch tenant record from the tenants table
   const availTenant = await db
     .select({
@@ -239,42 +288,38 @@ export const verifyAvailability =  async (tenant: string ) => {
     .limit(1);
 
   // Check if the tenant exists
-  if (availTenant.length === 0) { // availTenant will be an array, so check its length
-    return { success: 'Site URL is available.' };
+  if (availTenant.length === 0) {
+    // availTenant will be an array, so check its length
+    return { success: "Site URL is available." };
   }
 
   // If tenant exists, proceed with other logic or return success
-  return { error: 'Site URL already taken. Try other name' };
+  return { error: "Site URL already taken. Try other name" };
 };
 
-
-export const createTenant =  async (tenant: string ) => {
-  
-
+export const createTenant = async (tenant: string) => {
   const newTenant: NewTenant = {
-  
-    tenant
-    
+    tenant,
   };
 
- 
-  const [createdTenant] = await db.insert(tenants).values(newTenant).returning();
+  const [createdTenant] = await db
+    .insert(tenants)
+    .values(newTenant)
+    .returning();
 
   if (!createdTenant) {
-    return { error: 'Site URL already taken. Try other name' };
+    return { error: "Site URL already taken. Try other name" };
   }
- const user = await getUser();
-  if(user){
-     await db
-        .update(users)
-        .set({ siteId: newTenant.tenant })
-        .where(eq(users.email, user.email));
-
+  const user = await getUser();
+  if (user) {
+    await db
+      .update(users)
+      .set({ siteId: newTenant.tenant })
+      .where(eq(users.email, user.email));
   }
 
-  return  { success: 'Site URL Created.' };
+  return { success: "Site URL Created." };
 };
-
 
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
@@ -282,7 +327,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const userWithTeam = await db
     .select({
       user: users,
-      
+
       team: teams,
     })
     .from(users)
@@ -292,7 +337,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     .limit(1);
 
   if (userWithTeam.length === 0) {
-    return { error: 'Invalid email or password. Please try again.' };
+    return { error: "Invalid email or password. Please try again." };
   }
 
   const { user: foundUser, team: foundTeam } = userWithTeam[0];
@@ -303,7 +348,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   );
 
   if (!isPasswordValid) {
-    return { error: 'Invalid email or password. Please try again.' };
+    return { error: "Invalid email or password. Please try again." };
   }
 
   await Promise.all([
@@ -311,16 +356,14 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     logActivity(foundTeam?.id, foundUser.id, ActivityType.SIGN_IN),
   ]);
 
-  const redirectTo = formData.get('redirect') as string | null;
-  if (redirectTo === 'checkout') {
-    const priceId = formData.get('priceId') as string;
+  const redirectTo = formData.get("redirect") as string | null;
+  if (redirectTo === "checkout") {
+    const priceId = formData.get("priceId") as string;
     return createCheckoutSession({ team: foundTeam, priceId });
   }
 
-  if (foundUser.siteId)
-    redirect(`/${foundUser.siteId}`);
-  redirect ('/registersite') 
-    
+  if (foundUser.siteId) redirect(`/${foundUser.siteId}`);
+  redirect("/registersite");
 });
 
 const signUpSchema = z.object({
@@ -339,7 +382,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     .limit(1);
 
   if (existingUser.length > 0) {
-    return { error: 'Failed to create user. Please try again.' };
+    return { error: "Failed to create user. Please try again." };
   }
 
   const passwordHash = await hashPassword(password);
@@ -347,13 +390,13 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const newUser: NewUser = {
     email,
     passwordHash,
-    role: 'owner', // Default role, will be overridden if there's an invitation
+    role: "owner", // Default role, will be overridden if there's an invitation
   };
 
   const [createdUser] = await db.insert(users).values(newUser).returning();
 
   if (!createdUser) {
-    return { error: 'Failed to create user. Please try again.' };
+    return { error: "Failed to create user. Please try again." };
   }
 
   let teamId: number;
@@ -369,7 +412,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
         and(
           eq(invitations.id, parseInt(inviteId)),
           eq(invitations.email, email),
-          eq(invitations.status, 'pending')
+          eq(invitations.status, "pending")
         )
       )
       .limit(1);
@@ -380,7 +423,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
       await db
         .update(invitations)
-        .set({ status: 'accepted' })
+        .set({ status: "accepted" })
         .where(eq(invitations.id, invitation.id));
 
       await logActivity(teamId, createdUser.id, ActivityType.ACCEPT_INVITATION);
@@ -391,7 +434,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
         .where(eq(teams.id, teamId))
         .limit(1);
     } else {
-      return { error: 'Invalid or expired invitation.' };
+      return { error: "Invalid or expired invitation." };
     }
   } else {
     // Create a new team if there's no invitation
@@ -402,11 +445,11 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     [createdTeam] = await db.insert(teams).values(newTeam).returning();
 
     if (!createdTeam) {
-      return { error: 'Failed to create team. Please try again.' };
+      return { error: "Failed to create team. Please try again." };
     }
 
     teamId = createdTeam.id;
-    userRole = 'owner';
+    userRole = "owner";
 
     await logActivity(teamId, createdUser.id, ActivityType.CREATE_TEAM);
   }
@@ -423,20 +466,20 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     setSession(createdUser),
   ]);
 
-  const redirectTo = formData.get('redirect') as string | null;
-  if (redirectTo === 'checkout') {
-    const priceId = formData.get('priceId') as string;
+  const redirectTo = formData.get("redirect") as string | null;
+  if (redirectTo === "checkout") {
+    const priceId = formData.get("priceId") as string;
     return createCheckoutSession({ team: createdTeam, priceId });
   }
 
-  redirect('/registersite');
+  redirect("/registersite");
 });
 
 export async function signOut() {
   const user = (await getUser()) as User;
   const userWithTeam = await getUserWithTeam(user.id);
   await logActivity(userWithTeam?.teamId, user.id, ActivityType.SIGN_OUT);
-  (await cookies()).delete('session');
+  (await cookies()).delete("session");
 }
 
 const updatePasswordSchema = z
@@ -447,7 +490,7 @@ const updatePasswordSchema = z
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ['confirmPassword'],
+    path: ["confirmPassword"],
   });
 
 export const updatePassword = validatedActionWithUser(
@@ -461,12 +504,12 @@ export const updatePassword = validatedActionWithUser(
     );
 
     if (!isPasswordValid) {
-      return { error: 'Current password is incorrect.' };
+      return { error: "Current password is incorrect." };
     }
 
     if (currentPassword === newPassword) {
       return {
-        error: 'New password must be different from the current password.',
+        error: "New password must be different from the current password.",
       };
     }
 
@@ -481,7 +524,7 @@ export const updatePassword = validatedActionWithUser(
       logActivity(userWithTeam?.teamId, user.id, ActivityType.UPDATE_PASSWORD),
     ]);
 
-    return { success: 'Password updated successfully.' };
+    return { success: "Password updated successfully." };
   }
 );
 
@@ -496,7 +539,7 @@ export const deleteAccount = validatedActionWithUser(
 
     const isPasswordValid = await comparePasswords(password, user.passwordHash);
     if (!isPasswordValid) {
-      return { error: 'Incorrect password. Account deletion failed.' };
+      return { error: "Incorrect password. Account deletion failed." };
     }
 
     const userWithTeam = await getUserWithTeam(user.id);
@@ -527,14 +570,14 @@ export const deleteAccount = validatedActionWithUser(
         );
     }
 
-    (await cookies()).delete('session');
-    redirect('/sign-in');
+    (await cookies()).delete("session");
+    redirect("/sign-in");
   }
 );
 
 const updateAccountSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  email: z.string().email('Invalid email address'),
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email address"),
 });
 
 export const updateAccount = validatedActionWithUser(
@@ -548,7 +591,7 @@ export const updateAccount = validatedActionWithUser(
       logActivity(userWithTeam?.teamId, user.id, ActivityType.UPDATE_ACCOUNT),
     ]);
 
-    return { success: 'Account updated successfully.' };
+    return { success: "Account updated successfully." };
   }
 );
 
@@ -563,7 +606,7 @@ export const removeTeamMember = validatedActionWithUser(
     const userWithTeam = await getUserWithTeam(user.id);
 
     if (!userWithTeam?.teamId) {
-      return { error: 'User is not part of a team' };
+      return { error: "User is not part of a team" };
     }
 
     await db
@@ -581,13 +624,13 @@ export const removeTeamMember = validatedActionWithUser(
       ActivityType.REMOVE_TEAM_MEMBER
     );
 
-    return { success: 'Team member removed successfully' };
+    return { success: "Team member removed successfully" };
   }
 );
 
 const inviteTeamMemberSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  role: z.enum(['member', 'owner']),
+  email: z.string().email("Invalid email address"),
+  role: z.enum(["member", "owner"]),
 });
 
 export const inviteTeamMember = validatedActionWithUser(
@@ -597,7 +640,7 @@ export const inviteTeamMember = validatedActionWithUser(
     const userWithTeam = await getUserWithTeam(user.id);
 
     if (!userWithTeam?.teamId) {
-      return { error: 'User is not part of a team' };
+      return { error: "User is not part of a team" };
     }
 
     const existingMember = await db
@@ -610,7 +653,7 @@ export const inviteTeamMember = validatedActionWithUser(
       .limit(1);
 
     if (existingMember.length > 0) {
-      return { error: 'User is already a member of this team' };
+      return { error: "User is already a member of this team" };
     }
 
     // Check if there's an existing invitation
@@ -621,13 +664,13 @@ export const inviteTeamMember = validatedActionWithUser(
         and(
           eq(invitations.email, email),
           eq(invitations.teamId, userWithTeam.teamId),
-          eq(invitations.status, 'pending')
+          eq(invitations.status, "pending")
         )
       )
       .limit(1);
 
     if (existingInvitation.length > 0) {
-      return { error: 'An invitation has already been sent to this email' };
+      return { error: "An invitation has already been sent to this email" };
     }
 
     // Create a new invitation
@@ -636,7 +679,7 @@ export const inviteTeamMember = validatedActionWithUser(
       email,
       role,
       invitedBy: user.id,
-      status: 'pending',
+      status: "pending",
     });
 
     await logActivity(
@@ -648,6 +691,6 @@ export const inviteTeamMember = validatedActionWithUser(
     // TODO: Send invitation email and include ?inviteId={id} to sign-up URL
     // await sendInvitationEmail(email, userWithTeam.team.name, role)
 
-    return { success: 'Invitation sent successfully' };
+    return { success: "Invitation sent successfully" };
   }
 );
