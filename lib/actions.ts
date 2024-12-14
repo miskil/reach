@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { and, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
 import fs from "fs";
 import path from "path";
@@ -12,6 +12,7 @@ import {
   teams,
   tenants,
   siteheader,
+  pages,
   SiteHeader,
   teamMembers,
   activityLogs,
@@ -21,8 +22,16 @@ import {
   type NewActivityLog,
   type NewTenant,
   type NewSiteHeader,
+  type Banner,
+  type Tile,
+  type Tenant,
+  type PageType,
+  type NewPage,
+  type NewBanner,
+  type NewTile,
   ActivityType,
   invitations,
+  menus,
 } from "@/lib/db/schema";
 import { comparePasswords, hashPassword, setSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
@@ -161,6 +170,102 @@ export async function getSiteHeaderElements(siteId: string) {
   return siteHeaderElements[0];
 }
 
+export async function getSitePages(siteId: string) {
+  return await db.select().from(pages).where(eq(pages.siteId, siteId));
+}
+
+export async function getCurrentPage(siteId: string, name: string) {
+  return await db
+    .select()
+    .from(pages)
+    .where(eq(pages.siteId, siteId) && eq(pages.name, name))
+    .limit(1);
+}
+
+export async function createPage(siteId: string, name: string, layout: string) {
+  const newPage = await db
+    .insert(pages)
+    .values({ siteId, name, layout, content: {} })
+    .returning();
+  revalidatePath("/"); // Revalidate the path to refresh the page list
+  return newPage[0];
+  // Validate or transform the result (optional, if needed)
+  if (!newPage) {
+    throw new Error("Failed to create a new page.");
+  }
+
+  // Ensure it matches the Page interface
+  return newPage[0] as PageType;
+}
+export async function upinsertPage(
+  siteId: string,
+  name: string,
+  layout: string,
+  menuItem: string,
+  content: any
+) {
+  let page;
+
+  if (name) {
+    // Try to update the page if pageId is provided
+    try {
+      const updatedPage = await db
+        .update(pages)
+        .set({
+          siteId: siteId,
+          name: name,
+          layout: layout,
+          menuItem: menuItem,
+          content: content,
+        })
+        .where(eq(pages.name, name))
+        .returning();
+
+      if (updatedPage.length > 0) {
+        page = updatedPage[0];
+        revalidatePath(`${siteId}/admin/managepage/pageeditor/${name}`); // Revalidate the editor page
+      }
+    } catch (error) {
+      console.error("Error updating page:", error);
+      throw new Error("Failed to update the page.");
+    }
+  }
+
+  if (!page) {
+    // Insert a new page if pageId is not found or not provided
+
+    try {
+      const newPage = await db
+        .insert(pages)
+        .values({
+          siteId: siteId,
+          name: name,
+          layout: layout,
+          menuItem: menuItem,
+          content: content,
+        }) // Assuming db.generateId() generates a new ID
+        .returning();
+
+      page = newPage[0];
+      revalidatePath("/"); // Revalidate the path to refresh the page list
+    } catch (error) {
+      console.error("Error creating page:", error);
+      throw new Error("Failed to create a new page.");
+    }
+  }
+
+  return page;
+}
+export async function updatePage(id: string, content: any) {
+  const updatedPage = await db
+    .update(pages)
+    .set(content)
+
+    .where(eq(pages.id, Number(id)))
+    .returning();
+  revalidatePath(`/editor/${id}`); // Revalidate the editor page
+  return updatedPage[0];
+}
 export async function deleteImage(imagePath: string) {
   try {
     const filePath = path.join(process.cwd(), "public", imagePath);
@@ -171,7 +276,7 @@ export async function deleteImage(imagePath: string) {
   return "Deleted";
 }
 
-async function uploadImage(image: File | null) {
+export async function uploadImage(image: File | null) {
   let iconPath: string = "",
     filePath: string = "";
 
@@ -198,6 +303,26 @@ async function uploadImage(image: File | null) {
   return iconPath;
 }
 
+export async function saveMDX({
+  title,
+  content,
+}: {
+  title: string;
+  content: string;
+}) {
+  const mdxContent = `# ${title}\n\n${content}`;
+  const fileName = `${title.replace(/ /g, "_")}.mdx`;
+  const filePath = path.join(process.cwd(), "content", fileName);
+
+  try {
+    // Save the file to the filesystem
+    fs.writeFileSync(filePath, mdxContent, "utf8");
+    return { success: true, message: "MDX file created successfully!" };
+  } catch (error) {
+    console.error("Error saving MDX file:", error);
+    return { success: false, message: "Failed to save MDX file." };
+  }
+}
 export async function upsertSiteData(data: FormData) {
   const siteId = data.get("siteId") as string | null;
   const siteHeader = data.get("siteHeader") as string | null;
@@ -275,6 +400,99 @@ export async function upsertSiteData(data: FormData) {
   }
 
   return { success: true };
+}
+
+export async function upinsertPageData(data: FormData) {
+  const siteId = data.get("siteId") as string | null;
+  const pageTemplate = data.get("pageTemplate") as string | null;
+  const menuItem = data.get("menuItem") as string | null;
+  const pageTitle = data.get("pageTitle") as string | null;
+
+  if (!siteId || !pageTemplate || !menuItem || !pageTitle || !pageContent) {
+    return { error: "Missing required fields" };
+  }
+
+  try {
+    await db.insert(pages).values({
+      siteId,
+      pageTemplate,
+      menuItem,
+      pagetitle: pageTitle,
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      error: "Failed to create or update page data. Please try again later.",
+    };
+  }
+
+  return { success: true };
+}
+async function saveBannerData(
+  siteId: string,
+  pageTemplate: string,
+  bannerImages: string[],
+  tileData: { image: string; text: string; moreLink: string }[]
+) {
+  // Save banner images
+  for (let i = 0; i < bannerImages.length; i++) {
+    await db.insert(banners).values({
+      siteId,
+      pageTemplate,
+      image_url: bannerImages[i],
+      order_num: i + 1,
+      is_active: true,
+    });
+  }
+}
+
+async function saveTilesData(
+  siteId: string,
+  pageTemplate: string,
+  bannerImages: string[],
+  tileData: { image: string; text: string; moreLink: string }[]
+) {
+  // Save banner images
+  for (let i = 0; i < tileData.length; i++) {
+    await db.insert(tiles).values({
+      siteId,
+      pageTemplate,
+      image_url: tileData[i].image,
+      text: tileData[i].text,
+      more_link: tileData[i].moreLink,
+      order_num: i + 1,
+      is_active: true,
+    });
+  }
+}
+// Save banner images
+
+export async function addMenu(data: FormData) {
+  const siteId = data.get("siteId") as string;
+  const menuItem = data.get("menuItem") as string;
+  const url = data.get("url") as string;
+  const order_num = parseInt(data.get("order_num") as string, 10);
+
+  await db.insert(menus).values({
+    siteId,
+    menuItem,
+    url,
+    order_num,
+  });
+  revalidatePath("/menu-management");
+}
+
+export async function deleteMenu(id: number) {
+  await db.delete(menus).where(eq(menus.id, id));
+  revalidatePath("/menu-management");
+}
+
+export async function getMenuItems(siteId: string) {
+  return await db
+    .select()
+    .from(menus)
+    .where(eq(menus.siteId, siteId))
+    .orderBy(asc(menus.order_num));
 }
 
 export const verifyAvailability = async (tenant: string) => {

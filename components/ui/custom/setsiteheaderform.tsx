@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { Trash2, ImageUp } from "lucide-react";
+import { Trash2, ImageUp, CirclePlus } from "lucide-react";
 
 import { ActionState } from "@/lib/auth/middleware";
 import { SiteHeader as SiteHeaderType } from "@/lib/db/schema";

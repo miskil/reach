@@ -22,7 +22,7 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ siteId }) => {
   const close = () => setIsOpen(false);
 
   return (
-    <div className="relative top-0 z-10 flex w-full flex-col border-b border-gray-800 lg:bottom-0 lg:z-auto lg:w-72 lg:border-b-0 lg:border-r lg:border-gray-800">
+    <div className="relative top-0 z-10 flex w-full flex-col border-b border-gray-800 lg:bottom-0 lg:z-auto  lg:border-b-0 lg:border-r lg:border-gray-800">
       <div
         className={clsx("overflow-y-auto lg:static lg:block", {
           "fixed inset-x-0 bottom-0 top-14 mt-px bg-black": isOpen,
@@ -81,7 +81,11 @@ function GlobalNavItem({
         }
       )}
     >
-      {item.name}
+      {item.image ? (
+        <img src={item.image} alt={item.name} />
+      ) : (
+        <span>{item.description}</span>
+      )}
     </Link>
   );
 }
@@ -93,13 +97,13 @@ export function FooterMenu({ openMenu, siteId }: FooterMenuProps) {
       <div className="flex overflow-x-auto bg-gray-700 p-1">
         {adminmenu.map((section) => {
           return (
-            <nav className="flex p-2">
+            <nav key={section.name} className="flex p-2">
               <div className="flex space-x-2">
                 {section.items.map((item) => (
                   <GlobalNavItem
-                    key={item.slug}
+                    key={`${section.name}-${item.name}`}
                     item={item}
-                    close={close}
+                    close={() => false}
                     siteId={siteId}
                   />
                 ))}

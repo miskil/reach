@@ -6,8 +6,25 @@ import {
   timestamp,
   integer,
   unique,
+  boolean,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+
+export const pages = pgTable("pages", {
+  id: serial("id").primaryKey(),
+  siteId: varchar("siteId")
+    .notNull()
+    .references(() => tenants.tenant),
+
+  name: varchar("name", { length: 255 }).notNull(),
+  layout: varchar("layout", { length: 50 }).notNull(),
+  menuItem: varchar("menu_item", { length: 255 }),
+  content: jsonb("content").notNull(), // Stores layout-specific content as JSON
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
 
 export const tenants = pgTable("tenants", {
   id: serial("id").unique(),
@@ -27,16 +44,68 @@ export const siteheader = pgTable("siteheader", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Table definition
+export const menus = pgTable("menus", {
+  id: serial("id").primaryKey(),
+  parent_id: integer("parent_id").references((): any => menus.id),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+  menuItem: varchar("title", { length: 255 }).unique(),
+  url: varchar("url", { length: 255 }).notNull(),
+  order_num: integer("order_num").notNull(),
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+/*
+export const pagex = pgTable("pagex", {
+  id: serial("id").primaryKey(),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+  pageTemplate: varchar("pageTemplate", { length: 20 })
+    .notNull()
+    .default("page1"), //page1, page2, page3, page4
+  menuItem: varchar("menuItem").references(() => menus.menuItem),
+  pagetitle: varchar("pagetitle", { length: 255 }).notNull(),
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const banners = pgTable("banners", {
+  id: serial("id").primaryKey(),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+  pageTemplate: varchar("pageTemplate").references(() => pagex.pageTemplate),
+  image_url: varchar("image_url", { length: 400 }).notNull(),
+  order_num: integer("order_num").notNull(), // To maintain the order of images
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
 export const tiles = pgTable("tiles", {
   id: serial("id").primaryKey(),
   siteId: varchar("siteId").references(() => tenants.tenant),
-  media: varchar("media", { length: 20 }).notNull().default("image"), //image or video
-  mediaURL: varchar("mediaURL", { length: 400 }),
-  linkURL: varchar("linkURL", { length: 400 }),
-  shortDescription: varchar("mediaURL", { length: 400 }),
-
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  pageTemplate: varchar("pageTemplate").references(() => pagex.pageTemplate),
+  image_url: varchar("image_url", { length: 400 }), // Image URL for the tile
+  text: text("text"), // Text content for the tile
+  more_link: varchar("more_link", { length: 400 }), // Link for the "more..." text
+  order_num: integer("order_num").notNull(), // To maintain the order of tiles
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
 });
+export const pageitems = pgTable("pageitems", {
+  id: serial("id").primaryKey(),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+  menuItem: varchar("menuItem").references(() => menus.menuItem),
+  pagetitle: varchar("pagetitle", { length: 255 }).notNull(),
+  order_num: integer("order_num").notNull(),
+  item_type: varchar("item_type", { length: 20 }).notNull().default("text"), //text, image, video, audio, banner link
+  item_url: varchar("item_url", { length: 400 }),
+  item_text: text("item_text"), //text
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+*/
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   siteId: varchar("siteId").references(() => tenants.tenant),
@@ -143,9 +212,18 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
 }));
 
 export type Tenant = typeof tenants.$inferSelect;
+export type Banner = typeof banners.$inferSelect;
+export type NewBanner = typeof banners.$inferInsert;
+export type Tile = typeof tiles.$inferSelect;
+export type NewTile = typeof tiles.$inferInsert;
+export type Pages = typeof pages.$inferSelect;
+export type NewPage = typeof pages.$inferInsert;
 export type NewTenant = typeof tenants.$inferInsert;
 export type NewSiteHeader = typeof siteheader.$inferInsert;
 export type SiteHeader = typeof siteheader.$inferSelect;
+export type PageType = typeof pages.$inferSelect;
+
+export type SiteMenusType = typeof menus.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Team = typeof teams.$inferSelect;

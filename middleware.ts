@@ -1,28 +1,30 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { signToken, verifyToken } from '@/lib/auth/session';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { signToken, verifyToken } from "@/lib/auth/session";
 
-const protectedRoutes = '/dashboard';
+const protectedRoutes = "/dashboard";
 
 export async function middleware(request: NextRequest) {
   const url = new URL(request.url);
   const { pathname } = request.nextUrl;
   const origin = url.origin;
-  const pathSegments = pathname ? pathname.split('/') : [];
-  const siteId =  pathSegments[1] || ''; // Assuming siteId is the second segment
-  
+  const pathSegments = pathname ? pathname.split("/") : [];
+  const siteId = pathSegments[1] || ""; // Assuming siteId is the second segment
+  const menuItem = pathSegments[2] || ""; // Assuming siteId is the second segment
+
   // Step 1: Add custom headers
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-url', request.url);
-  requestHeaders.set('x-origin', origin);
-  requestHeaders.set('x-siteid', siteId);
-  
-  const sessionCookie = request.cookies.get('session');
+  requestHeaders.set("x-url", request.url);
+  requestHeaders.set("x-origin", origin);
+  requestHeaders.set("x-siteid", siteId);
+  requestHeaders.set("x-menu", menuItem);
+
+  const sessionCookie = request.cookies.get("session");
   const isProtectedRoute = pathname.startsWith(protectedRoutes);
 
   // Step 2: Handle protected routes and session validation
   if (isProtectedRoute && !sessionCookie) {
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   let response = NextResponse.next({
@@ -38,21 +40,21 @@ export async function middleware(request: NextRequest) {
       const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
       response.cookies.set({
-        name: 'session',
+        name: "session",
         value: await signToken({
           ...parsed,
           expires: expiresInOneDay.toISOString(),
         }),
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
+        sameSite: "lax",
         expires: expiresInOneDay,
       });
     } catch (error) {
-      console.error('Error updating session:', error);
-      response.cookies.delete('session');
+      console.error("Error updating session:", error);
+      response.cookies.delete("session");
       if (isProtectedRoute) {
-        return NextResponse.redirect(new URL('/sign-in', request.url));
+        return NextResponse.redirect(new URL("/sign-in", request.url));
       }
     }
   }
@@ -62,5 +64,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Match all routes except API, static assets, and favicon
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

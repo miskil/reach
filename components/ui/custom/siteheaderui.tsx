@@ -57,7 +57,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
         <div className="flex items-center space-x-4">
           <Link href="/" className="flex items-center">
             <Image
-              src="/path/to/logo.png"
+              src={headerdata?.siteiconURL || "/favicon.ico"}
               alt="Logo"
               width={40}
               height={40}
