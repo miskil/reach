@@ -1,6 +1,7 @@
 import LayoutRenderer from "../compo/LayoutRenderer";
 import { getCurrentPage } from "../../lib/actions";
 import { headers } from "next/headers";
+import PageDisplay from "../compo/PageDisplay";
 
 export default async function SiteHomePage() {
   const headersList = await headers();
@@ -9,7 +10,7 @@ export default async function SiteHomePage() {
 
   return (
     <div>
-      <p> Display Home Page</p>
+      <PageDisplay page={currentPage[0]} siteId={siteId!} />
     </div>
   );
 }
