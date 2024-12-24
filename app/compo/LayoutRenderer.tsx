@@ -23,14 +23,14 @@ const LayoutRenderer: React.FC<LayoutRendererProps> = ({
             initialImages={content.bannerImages || []}
             adminMode={adminMode}
             onImagesUpdate={(updatedImages) =>
-              onUpdate({ ...content, bannerImages: updatedImages })
+              onUpdate && onUpdate({ ...content, bannerImages: updatedImages })
             }
           />
           <TileGrid
             initialTiles={content.tiles || []}
             adminMode={adminMode}
             onTilesUpdate={(updatedTiles) =>
-              onUpdate({ ...content, tiles: updatedTiles })
+              onUpdate && onUpdate({ ...content, tiles: updatedTiles })
             }
           />
         </>
@@ -41,7 +41,9 @@ const LayoutRenderer: React.FC<LayoutRendererProps> = ({
           bannerImage={content.bannerImage || ""}
           text={content.text || ""}
           adminMode={adminMode}
-          onUpdate={(updatedData) => onUpdate({ ...content, ...updatedData })}
+          onUpdate={(updatedData) =>
+            onUpdate && onUpdate({ ...content, ...updatedData })
+          }
         />
       );
     default:
