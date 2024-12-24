@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import ButtonUpload from "../../components/ui/custom/buttonupload"; // Adjust the import path as necessary
+import ButtonDelete from "../../components/ui/custom/buttondelete"; // Ensure this path is correct
+
 import { uploadImage, deleteImage } from "../../lib/actions"; // Import the server action
-import { Image as ImageIcon } from "lucide-react"; // Adjust the import path as necessary
+import { Image as ImageIcon, Trash2 } from "lucide-react"; // Adjust the import path as necessary
 
 interface Tile {
   id: number;
@@ -83,26 +85,31 @@ const TileGrid: React.FC<TileGridProps> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {tiles.map((tile, index) => (
-          <div key={tile.id} className="p-0 border border-gray-300 rounded">
+          <div
+            key={tile.id}
+            className="p-0 border border-gray-300 rounded relative group"
+          >
             <div className="mb-4">
               {tile.image ? (
-                <div>
+                <div className="relative">
                   <img
                     src={tile.image}
                     alt={`Tile ${index}`}
                     className="w-full h-auto"
                   />
                   {adminMode && (
-                    <div className="flex justify-between mt-2">
+                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-start mt-2 group-hover:flex hidden">
                       <ButtonUpload
                         ButtonComponent={ImageIcon}
                         onFileUpload={(file) => handleImageUpload(file, index)}
                       />
                       <button
-                        className="text-red-500"
+                        className="text-black-500"
                         onClick={() => handleDeleteTile(index)}
                       >
-                        Delete
+                        <div className="bg-gray-200 rounded-full p-2">
+                          <Trash2 />
+                        </div>
                       </button>
                     </div>
                   )}

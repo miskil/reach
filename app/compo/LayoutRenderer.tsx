@@ -19,13 +19,16 @@ const LayoutRenderer: React.FC<LayoutRendererProps> = ({
     case "layout-1":
       return (
         <>
-          <BannerSlider
-            initialImages={content.bannerImages || []}
-            adminMode={adminMode}
-            onImagesUpdate={(updatedImages) =>
-              onUpdate && onUpdate({ ...content, bannerImages: updatedImages })
-            }
-          />
+          <div className="pb-8">
+            <BannerSlider
+              initialImages={content.bannerImages || []}
+              adminMode={adminMode}
+              onImagesUpdate={(updatedImages) =>
+                onUpdate &&
+                onUpdate({ ...content, bannerImages: updatedImages })
+              }
+            />
+          </div>
           <TileGrid
             initialTiles={content.tiles || []}
             adminMode={adminMode}

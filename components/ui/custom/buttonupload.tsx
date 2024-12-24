@@ -26,7 +26,9 @@ const ButtonUpload: React.FC<ButtonUploadProps> = ({
   return (
     <div>
       <button type="button" onClick={handleButtonClick}>
-        <ButtonComponent />
+        <div className="bg-gray-200 rounded-full p-2">
+          <ButtonComponent />
+        </div>
       </button>
       <input
         type="file"
