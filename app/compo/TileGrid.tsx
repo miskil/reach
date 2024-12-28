@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ButtonUpload from "../../components/ui/custom/buttonupload"; // Adjust the import path as necessary
 import ButtonDelete from "../../components/ui/custom/buttondelete"; // Ensure this path is correct
-
+import Link from "next/link";
 import { uploadImage, deleteImage } from "../../lib/actions"; // Import the server action
 import { Image as ImageIcon, Trash2 } from "lucide-react"; // Adjust the import path as necessary
 
@@ -9,6 +9,7 @@ interface Tile {
   id: number;
   image: string;
   text: string;
+  type: string;
 }
 
 interface TileGridProps {
@@ -73,21 +74,26 @@ const TileGrid: React.FC<TileGridProps> = ({
   };
 
   const handleAddTile = () => {
-    const newTile: Tile = { id: Date.now(), image: "", text: "" };
+    const newTile: Tile = { id: Date.now(), image: "", text: "", category: "" };
     const updatedTiles = [...tiles, newTile];
     setTiles(updatedTiles);
     onTilesUpdate(updatedTiles);
+  };
+
+  const handleTypeChange = (index: number, type: string) => {
+    const updatedTile: Tile = { ...tiles[index], type };
+    handleTileUpdate(index, updatedTile);
   };
 
   return (
     <div>
       {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {tiles.map((tile, index) => (
           <div
             key={tile.id}
-            className="p-0 border border-gray-300 rounded relative group"
+            className="p-0 border border-gray-300 rounded-3xl relative group"
           >
             <div className="mb-4">
               {tile.image ? (
@@ -95,22 +101,55 @@ const TileGrid: React.FC<TileGridProps> = ({
                   <img
                     src={tile.image}
                     alt={`Tile ${index}`}
-                    className="w-full h-auto"
+                    className="w-full h-auto rounded-3xl"
                   />
                   {adminMode && (
-                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-start mt-2 group-hover:flex hidden">
-                      <ButtonUpload
-                        ButtonComponent={ImageIcon}
-                        onFileUpload={(file) => handleImageUpload(file, index)}
-                      />
-                      <button
-                        className="text-black-500"
-                        onClick={() => handleDeleteTile(index)}
-                      >
-                        <div className="bg-gray-200 rounded-full p-2">
-                          <Trash2 />
-                        </div>
-                      </button>
+                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-start mt-2 hidden group-hover:flex">
+                      {/* Upload Button */}
+                      <div className="pr-2 relative group">
+                        <ButtonUpload
+                          ButtonComponent={ImageIcon}
+                          onFileUpload={(file) =>
+                            handleImageUpload(file, index)
+                          }
+                        />
+                        <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100">
+                          Upload Image
+                        </span>
+                      </div>
+
+                      {/* Delete Button */}
+                      <div className="relative group">
+                        <button
+                          className="text-black-500"
+                          onClick={() => handleDeleteTile(index)}
+                        >
+                          <div className="bg-gray-200 rounded-full p-2">
+                            <Trash2 />
+                          </div>
+                        </button>
+                        <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100">
+                          Delete Image
+                        </span>
+                      </div>
+                      <div className="relative group ml-auto">
+                        <select
+                          className="bg-white border border-gray-300 rounded p-2 text-xs"
+                          value={tile.type || "info"}
+                          onChange={(e) =>
+                            handleTypeChange(index, e.target.value)
+                          }
+                        >
+                          <option value="">Type</option>
+                          <option value="event">Event</option>
+                          <option value="info">Info</option>
+                          <option value="project">Project</option>
+                          <option value="product">Product</option>
+                        </select>
+                        <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-gray-700 rounded opacity-0 group-hover:opacity-100">
+                          Select Category
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -127,11 +166,28 @@ const TileGrid: React.FC<TileGridProps> = ({
               <textarea
                 value={tile.text}
                 onChange={(e) => handleTextChange(index, e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded bg-white text-black"
+                className="w-full p-2 border border-gray-300 rounded bg-white text-black rounded-3xl"
               />
             ) : (
               <p>{tile.text}</p>
             )}
+            <div className="flex justify-between mt-2">
+              <Link href="">
+                <button className="p-2 bg-blue-500 text-white rounded">
+                  Share
+                </button>
+              </Link>
+              {!adminMode && tile.type === "product" && (
+                <button className="p-2 bg-green-500 text-white rounded">
+                  Buy
+                </button>
+              )}
+              {!adminMode && tile.type === "project" && (
+                <button className="p-2 bg-yellow-500 text-white rounded">
+                  Donate
+                </button>
+              )}
+            </div>
           </div>
         ))}
         {adminMode && (
