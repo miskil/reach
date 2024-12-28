@@ -3,7 +3,13 @@ import ButtonUpload from "../../components/ui/custom/buttonupload"; // Adjust th
 import ButtonDelete from "../../components/ui/custom/buttondelete"; // Ensure this path is correct
 import Link from "next/link";
 import { uploadImage, deleteImage } from "../../lib/actions"; // Import the server action
-import { Image as ImageIcon, Trash2 } from "lucide-react"; // Adjust the import path as necessary
+import {
+  Image as ImageIcon,
+  Trash2,
+  HeartHandshake,
+  ScanBarcode,
+  Share,
+} from "lucide-react"; // Adjust the import path as necessary
 
 interface Tile {
   id: number;
@@ -173,18 +179,18 @@ const TileGrid: React.FC<TileGridProps> = ({
             )}
             <div className="flex justify-between mt-2">
               <Link href="">
-                <button className="p-2 bg-blue-500 text-white rounded">
-                  Share
+                <button className="p-2 text-black rounded">
+                  <Share />
                 </button>
               </Link>
               {!adminMode && tile.type === "product" && (
                 <button className="p-2 bg-green-500 text-white rounded">
-                  Buy
+                  <ScanBarcode />
                 </button>
               )}
               {!adminMode && tile.type === "project" && (
-                <button className="p-2 bg-yellow-500 text-white rounded">
-                  Donate
+                <button className="p-2 bg-red-500 text-white rounded">
+                  <HeartHandshake />
                 </button>
               )}
             </div>
