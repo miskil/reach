@@ -99,6 +99,7 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
         Save Page
       </button>
       <LayoutRenderer
+        siteId={siteId}
         layout={currentPage.layout}
         content={currentPage.content}
         adminMode={adminMode}

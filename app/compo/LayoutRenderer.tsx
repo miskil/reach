@@ -3,6 +3,7 @@ import TileGrid from "./TileGrid";
 import LayoutTwo from "./Layout2";
 
 interface LayoutRendererProps {
+  siteId: string;
   layout: string;
   content: any;
   adminMode: boolean;
@@ -10,6 +11,7 @@ interface LayoutRendererProps {
 }
 
 const LayoutRenderer: React.FC<LayoutRendererProps> = ({
+  siteId,
   layout,
   content,
   adminMode,
@@ -21,6 +23,7 @@ const LayoutRenderer: React.FC<LayoutRendererProps> = ({
         <>
           <div className="pb-8">
             <BannerSlider
+              siteId={siteId}
               initialImages={content.bannerImages || []}
               adminMode={adminMode}
               onImagesUpdate={(updatedImages) =>
@@ -30,6 +33,7 @@ const LayoutRenderer: React.FC<LayoutRendererProps> = ({
             />
           </div>
           <TileGrid
+            siteId={siteId}
             initialTiles={content.tiles || []}
             adminMode={adminMode}
             onTilesUpdate={(updatedTiles) =>

@@ -175,11 +175,24 @@ export async function getSitePages(siteId: string) {
 }
 
 export async function getCurrentPage(siteId: string, name: string) {
-  return await db
-    .select()
-    .from(pages)
-    .where(eq(pages.siteId, siteId) && eq(pages.name, name))
-    .limit(1);
+  try {
+    const result = await db
+      .select()
+      .from(pages)
+      .where(and(eq(pages.siteId, siteId), eq(pages.name, name)))
+      .limit(1);
+
+    if (result.length === 0) {
+      throw new Error(
+        `Page with name "${name}" not found for site "${siteId}".`
+      );
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error(`Error fetching page "${name}" for site "${siteId}":`, error);
+    return null;
+  }
 }
 
 export async function createPage(siteId: string, name: string, layout: string) {
@@ -266,7 +279,7 @@ export async function updatePage(id: string, content: any) {
   revalidatePath(`/editor/${id}`); // Revalidate the editor page
   return updatedPage[0];
 }
-export async function deleteImage(imagePath: string) {
+export async function deleteImage(siteId: string, imagePath: string) {
   try {
     const filePath = path.join(process.cwd(), "public", imagePath);
     await fs.promises.rm(filePath);
@@ -276,20 +289,20 @@ export async function deleteImage(imagePath: string) {
   return "Deleted";
 }
 
-export async function uploadImage(image: File | null) {
+export async function uploadImage(siteId: string, image: File | null) {
   let iconPath: string = "",
     filePath: string = "";
 
   try {
     if (image) {
       // Set up the file path for the icon
-      const uploadsDir = path.join(process.cwd(), "public");
+      const uploadsDir = path.join(process.cwd(), "public", "uploads", siteId);
       if (!fs.existsSync(uploadsDir)) {
         fs.mkdirSync(uploadsDir, { recursive: true });
       }
 
-      iconPath = `/uploads/${Date.now()}-${image.name}`;
-      filePath = path.join(uploadsDir, iconPath);
+      iconPath = `/uploads/${siteId}/${Date.now()}-${image.name}`;
+      filePath = path.join(process.cwd(), "public", iconPath);
 
       // Save the file to the filesystem
       await fs.promises.writeFile(
@@ -303,26 +316,6 @@ export async function uploadImage(image: File | null) {
   return iconPath;
 }
 
-export async function saveMDX({
-  title,
-  content,
-}: {
-  title: string;
-  content: string;
-}) {
-  const mdxContent = `# ${title}\n\n${content}`;
-  const fileName = `${title.replace(/ /g, "_")}.mdx`;
-  const filePath = path.join(process.cwd(), "content", fileName);
-
-  try {
-    // Save the file to the filesystem
-    fs.writeFileSync(filePath, mdxContent, "utf8");
-    return { success: true, message: "MDX file created successfully!" };
-  } catch (error) {
-    console.error("Error saving MDX file:", error);
-    return { success: false, message: "Failed to save MDX file." };
-  }
-}
 export async function upsertSiteData(data: FormData) {
   const siteId = data.get("siteId") as string | null;
   const siteHeader = data.get("siteHeader") as string | null;
@@ -330,7 +323,7 @@ export async function upsertSiteData(data: FormData) {
   const headerTextColor = data.get("headerTextColor") as string | null;
   const headerFontSize = data.get("headerFontSize") as string | null;
   const headerBkgColor = data.get("headerBkgColor") as string | null;
-  const headerBkgImage = data.get("headerBkgImage") as string | null;
+  const headerBkgImage = data.get("headerBkgImage") as File | null;
   const existingiconURL = data.get("existingiconURL") as string | null;
   const existingbgImageURL = data.get("existingbgImageURL") as string | null;
 
@@ -346,7 +339,7 @@ export async function upsertSiteData(data: FormData) {
 
   if (siteIcon) {
     try {
-      siteIconPath = await uploadImage(siteIcon);
+      siteIconPath = await uploadImage(siteId, siteIcon);
     } catch (error) {
       console.error("Image Upload Error:", error);
       return { error: "Failed to upload site icon" };
@@ -355,7 +348,7 @@ export async function upsertSiteData(data: FormData) {
 
   if (headerBkgImage) {
     try {
-      bkgImagePath = await uploadImage(headerBkgImage);
+      bkgImagePath = await uploadImage(siteId, headerBkgImage);
     } catch (error) {
       console.error("Image Upload Error:", error);
       return { error: "Failed to upload site icon" };

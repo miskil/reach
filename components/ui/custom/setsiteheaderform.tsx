@@ -141,7 +141,7 @@ export default function SetSiteHeaderForm({
   const handleSiteIconDeleteClick = () => {
     setIconPreview("");
     setSiteicon(null);
-    deleteImage(existingiconURL);
+    deleteImage(siteid, existingiconURL);
     setexitingIconURL("");
     // delete the existing icon
   };
@@ -291,7 +291,7 @@ export default function SetSiteHeaderForm({
                     type="color"
                     name="headerBkgColor"
                     id="headerBkgColor"
-                    value={bgColor}
+                    value={bgColor!}
                     onChange={(e) => {
                       setBgColor(e.target.value);
                       setBgImage(null);
@@ -311,7 +311,7 @@ export default function SetSiteHeaderForm({
                   <select
                     id="headerFontSize"
                     name="headerFontSize"
-                    value={fontSize}
+                    value={fontSize!}
                     onChange={(e) => setFontSize(e.target.value)}
                     className="block mt-2 h-6 w-30 border border-gray-300 rounded-lg bg-white text-black text-sm focus:ring-blue-500 focus:border-blue-500"
                     ref={fontPickerRef}

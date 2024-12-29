@@ -19,12 +19,14 @@ interface Tile {
 }
 
 interface TileGridProps {
+  siteId: string;
   initialTiles: Tile[];
   adminMode: boolean;
   onTilesUpdate: (tiles: Tile[]) => void;
 }
 
 const TileGrid: React.FC<TileGridProps> = ({
+  siteId,
   initialTiles,
   adminMode,
   onTilesUpdate,
@@ -60,7 +62,7 @@ const TileGrid: React.FC<TileGridProps> = ({
         }
         const formData = new FormData();
         formData.append("file", file);
-        const imageURL = await uploadImage(file); // Call the server action
+        const imageURL = await uploadImage(siteId, file); // Call the server action
 
         if (!imageURL) {
           throw new Error("Failed to upload image");
@@ -80,7 +82,7 @@ const TileGrid: React.FC<TileGridProps> = ({
   };
 
   const handleAddTile = () => {
-    const newTile: Tile = { id: Date.now(), image: "", text: "", category: "" };
+    const newTile: Tile = { id: Date.now(), image: "", text: "", type: "" };
     const updatedTiles = [...tiles, newTile];
     setTiles(updatedTiles);
     onTilesUpdate(updatedTiles);

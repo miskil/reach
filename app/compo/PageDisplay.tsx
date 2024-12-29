@@ -20,6 +20,7 @@ const PageDisplay: React.FC<PageDisplayProps> = ({ page, siteId }) => {
       <h1 className="text-2xl font-bold">{currentPage!.name}</h1>
 
       <LayoutRenderer
+        siteId={siteId}
         layout={currentPage.layout}
         content={currentPage.content}
         adminMode={false}

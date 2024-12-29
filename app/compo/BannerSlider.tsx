@@ -9,13 +9,14 @@ interface Image {
 }
 
 interface BannerSliderProps {
+  siteId: string;
   initialImages: Image[];
   adminMode: boolean;
   onImagesUpdate: (images: Image[]) => void;
 }
 
 const BannerSlider = forwardRef<any, BannerSliderProps>(
-  ({ initialImages, adminMode, onImagesUpdate }, ref) => {
+  ({ siteId, initialImages, adminMode, onImagesUpdate }, ref) => {
     const [localImages, setLocalImages] = useState<Image[]>(initialImages);
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -29,7 +30,7 @@ const BannerSlider = forwardRef<any, BannerSliderProps>(
         formData.append("file", file);
 
         try {
-          const imageURL = await uploadImage(file); // Call the server action
+          const imageURL = await uploadImage(siteId, file); // Call the server action
           const newImage: Image = {
             id: Date.now(),
             url: imageURL, // URL returned from the server
@@ -53,7 +54,7 @@ const BannerSlider = forwardRef<any, BannerSliderProps>(
         setCurrentIndex(updatedImages.length - 1);
       }
       try {
-        await deleteImage(imageToDelete.url); // Call the server action to delete the image
+        await deleteImage(siteId, imageToDelete.url); // Call the server action to delete the image
       } catch (error) {
         console.error("Failed to delete image:", error);
       }
