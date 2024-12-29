@@ -10,10 +10,11 @@ export default async function SiteHomePage() {
 
   if (!currentPage) {
     return <div>Home Page not found for {siteId}</div>;
-  } else {  
-  return (
-    <div>
-      <PageDisplay page={currentPage} siteId={siteId!} />
-    </div>
-  );
+  } else {
+    return (
+      <div>
+        <PageDisplay page={currentPage} siteId={siteId!} />
+      </div>
+    );
+  }
 }
