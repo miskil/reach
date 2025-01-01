@@ -29,6 +29,7 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
     <div className="p-4">
       {itemType === "banner" && (
         <BannerSlider
+          siteId={siteId}
           initialImages={content.bannerImages || []}
           adminMode={false}
           onImagesUpdate={(updatedImages) => {}}
@@ -36,6 +37,7 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
       )}
       {itemType === "tile" && (
         <TileGrid
+          siteId={siteId}
           initialTiles={content.tiles || []}
           adminMode={false}
           onTilesUpdate={(updatedTiles) => {}}

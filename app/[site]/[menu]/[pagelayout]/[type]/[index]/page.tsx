@@ -22,14 +22,16 @@ export default async function PageComponents({ params }: PageProps) {
   const siteId = headersList.get("x-siteid");
   const { menu, pagelayout, type, index } = params;
 
-  const currentPage = await getCurrentPage(siteId!, "Page2");
+  const currentPage = await getCurrentPage(siteId!, menu);
 
-  const contentItems: any = currentPage[0].content;
+  if (!currentPage) {
+    return <div>Page Not Found</div>;
+  }
 
   return (
     <div>
       <ItemDisplay
-        page={currentPage[0]}
+        page={currentPage}
         siteId={siteId!}
         itemType={type}
         index={index}

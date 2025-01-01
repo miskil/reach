@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import LayoutRenderer from "../compo/LayoutRenderer";
 import { upinsertPage } from "../../lib/actions";
 import { PageType } from "../../lib/db/schema"; // Adjust the import path as necessary
+import PageRenderer from "../compo/pagerenderer";
 
 interface PageDisplayProps {
   page: PageType;
@@ -19,9 +20,8 @@ const PageDisplay: React.FC<PageDisplayProps> = ({ page, siteId }) => {
     <div className="p-4">
       <h1 className="text-2xl font-bold">{currentPage!.name}</h1>
 
-      <LayoutRenderer
+      <PageRenderer
         siteId={siteId}
-        layout={currentPage.layout}
         content={currentPage.content}
         adminMode={false}
         onUpdate={(updatedContent) =>

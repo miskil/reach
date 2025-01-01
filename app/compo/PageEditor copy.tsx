@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import LayoutRenderer from "../compo/LayoutRenderer";
-import PageRenderer from "../compo/pagerenderer";
 import { upinsertPage } from "../../lib/actions";
 import { PageType } from "../../lib/db/schema"; // Adjust the import path as necessary
 
@@ -99,9 +98,10 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
       >
         Save Page
       </button>
-      <PageRenderer
+      <LayoutRenderer
         siteId={siteId}
-        content={currentPage.content || []}
+        layout={currentPage.layout}
+        content={currentPage.content}
         adminMode={adminMode}
         onUpdate={(updatedContent) =>
           setCurrentPage((prevPage: PageType | null) =>

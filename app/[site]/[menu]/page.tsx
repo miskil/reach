@@ -7,10 +7,10 @@ export default async function MenuPage() {
   const siteId = headersList.get("x-siteid");
   const menuItem = headersList.get("x-menu");
 
-  const currentPage = (await getCurrentPage(siteId!, menuItem!))[0];
+  const currentPage = await getCurrentPage(siteId!, menuItem!);
   return (
     <div>
-      <PageDisplay page={currentPage} siteId={siteId!} />
+      <PageDisplay page={currentPage!} siteId={siteId!} />
     </div>
   );
 }
