@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import SectionHeader from "../compo/sectionheader";
 import TileGrid from "../compo/TileGrid";
 import BannerSlider from "../compo/BannerSlider";
+import TextEditor from "../compo/TextEditor";
 
 interface PageRendererProps {
   siteId: string;
@@ -40,6 +41,8 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         }; // Default styles and text
       case "tilegrid":
         return { Tile: [] }; // Empty tiles array
+      case "texteditor":
+        return { content: "" };
       default:
         return {}; // Fallback for unknown types
     }
@@ -127,6 +130,21 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             }
           />
         );
+      case "texteditor":
+        return (
+          <TextEditor
+            key={component.id}
+            siteId={siteId}
+            initialContent={component.widget.content}
+            adminMode={adminMode}
+            onUpdate={(text) =>
+              updateComponentWidget(component.id, {
+                ...component.widget,
+                content: text,
+              })
+            }
+          />
+        );
       default:
         return null;
     }
@@ -161,6 +179,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             <option value="banner">Banner</option>
             <option value="sectionheader">Section Header</option>
             <option value="tilegrid">Tile Grid</option>
+            <option value="texteditor">Text Editor</option>
           </select>
         </div>
       )}
