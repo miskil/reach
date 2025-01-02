@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import JoditEditor from "jodit-react";
 
 interface TextEditorProps {
@@ -22,11 +22,22 @@ const TextEditor: React.FC<TextEditorProps> = ({
     setContent(initialContent);
   }, [initialContent]);
 
-  const config = {
-    height: 700,
-    readonly: !adminMode,
-    placeholder: "Type here...",
-  };
+  const config = useMemo(
+    //  Using of useMemo while make custom configuration is strictly recomended
+    () => ({
+      //  if you don't use it the editor will lose focus every time when you make any change to the editor, even an addition of one character
+      /* Custom image uploader button configuretion to accept image and convert it to base64 format */
+
+      readonly: !adminMode,
+      placeholder: "Type here...",
+
+      uploader: {
+        insertImageAsBase64URI: true,
+        imagesExtensions: ["jpg", "png", "jpeg", "gif", "svg", "webp"], // this line is not much important , use if you only strictly want to allow some specific image format
+      },
+    }),
+    []
+  );
 
   const handleUpdate = (newContent: string) => {
     setContent(newContent);

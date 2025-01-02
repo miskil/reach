@@ -15,10 +15,10 @@ export default async function CurrentPage({ params }: PageProps) {
   let { name } = params;
   name = decodeURIComponent(name); // Replace %20 with space
 
-  const currentPage = (await getCurrentPage(siteId!, name))[0];
+  const currentPage = await getCurrentPage(siteId!, name);
   return (
     <div>
-      <PageEditor page={currentPage} siteId={siteId!} />
+      <PageEditor page={currentPage!} siteId={siteId!} />
     </div>
   );
 }

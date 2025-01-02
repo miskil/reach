@@ -56,22 +56,7 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
             className="p-1 border border-gray-300 rounded bg-white text-black"
           />
         </div>
-        <div>
-          <label htmlFor="layout" className="block mb-1">
-            Layout:
-          </label>
-          <select
-            id="layout"
-            name="layout"
-            value={currentPage.layout}
-            onChange={handleInputChange}
-            className="p-1 border border-gray-300 rounded bg-white text-black"
-          >
-            <option value="">Select Layout</option>
-            <option value="layout-1">Layout 1</option>
-            <option value="layout-2">Layout 2</option>
-          </select>
-        </div>
+
         <div>
           <label htmlFor="menuItem" className="block mb-1">
             Menu Item (Optional):
@@ -85,20 +70,21 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
             className="p-1 border border-gray-300 rounded bg-white text-black"
           />
         </div>
+        <div>
+          <button
+            onClick={() => setAdminMode(!adminMode)}
+            className="bg-yellow-500 text-white px-4 py-2 rounded mt-4"
+          >
+            Toggle {adminMode ? "Preview" : "Admin"} Mode
+          </button>
+          <button
+            onClick={handleSave}
+            className="bg-blue-500 text-white px-4 py-2 rounded ml-4"
+          >
+            Save Page
+          </button>
+        </div>
       </div>
-
-      <button
-        onClick={() => setAdminMode(!adminMode)}
-        className="bg-yellow-500 text-white px-4 py-2 rounded mt-4"
-      >
-        Toggle {adminMode ? "Preview" : "Admin"} Mode
-      </button>
-      <button
-        onClick={handleSave}
-        className="bg-blue-500 text-white px-4 py-2 rounded ml-4"
-      >
-        Save Page
-      </button>
       <PageRenderer
         siteId={siteId}
         content={currentPage.content || []}
