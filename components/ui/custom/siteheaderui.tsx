@@ -9,7 +9,7 @@ import clsx from "clsx";
 
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SiteIcon } from "@/components/ui/custom/siteicon";
+
 import { MousePointerClick, CircleIcon, Home, LogOut } from "lucide-react";
 import {
   DropdownMenu,

@@ -11,6 +11,14 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
+export interface ContentType {
+  components: Array<{
+    id: string;
+    type: string;
+    widget: any;
+  }>;
+}
+
 export const pages = pgTable("pages", {
   id: serial("id").primaryKey(),
   siteId: varchar("siteId")
@@ -212,10 +220,7 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
 }));
 
 export type Tenant = typeof tenants.$inferSelect;
-export type Banner = typeof banners.$inferSelect;
-export type NewBanner = typeof banners.$inferInsert;
-export type Tile = typeof tiles.$inferSelect;
-export type NewTile = typeof tiles.$inferInsert;
+
 export type Pages = typeof pages.$inferSelect;
 export type NewPage = typeof pages.$inferInsert;
 export type NewTenant = typeof tenants.$inferInsert;

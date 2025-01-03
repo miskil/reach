@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import PageDisplay from "app/compo/PageDisplay";
 import { getCurrentPage } from "lib/actions";
+import { PageType } from "lib/db/schema";
 
 export default async function MenuPage() {
   const headersList = await headers();
@@ -10,7 +11,7 @@ export default async function MenuPage() {
   const currentPage = await getCurrentPage(siteId!, menuItem!);
   return (
     <div>
-      <PageDisplay page={currentPage!} siteId={siteId!} />
+      <PageDisplay page={currentPage as PageType} siteId={siteId!} />
     </div>
   );
 }

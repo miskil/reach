@@ -1,14 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import LayoutRenderer from "../compo/LayoutRenderer";
 import { upinsertPage } from "../../lib/actions";
 import { PageType } from "../../lib/db/schema"; // Adjust the import path as necessary
+import { ContentType } from "../../lib/db/schema";
+interface PageContent {
+  components: Array<{
+    id: string;
+    type: string;
+    widget: any;
+  }>;
+}
+
 import PageRenderer from "../compo/pagerenderer";
 
 interface PageDisplayProps {
   page: PageType;
   siteId: string;
+}
+
+content: {
+  components: Array<{
+    id: string;
+    type: string;
+    widget: any;
+  }>;
 }
 
 const PageDisplay: React.FC<PageDisplayProps> = ({ page, siteId }) => {
@@ -22,7 +38,7 @@ const PageDisplay: React.FC<PageDisplayProps> = ({ page, siteId }) => {
 
       <PageRenderer
         siteId={siteId}
-        content={currentPage.content}
+        content={currentPage.content as ContentType}
         adminMode={false}
         onUpdate={(updatedContent) =>
           setCurrentPage((prevPage: PageType | null) =>

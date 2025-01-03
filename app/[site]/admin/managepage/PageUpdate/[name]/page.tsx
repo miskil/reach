@@ -4,15 +4,17 @@ import PageEditor from "app/compo/PageEditor";
 
 import { getCurrentPage } from "../../../../../../lib/actions";
 
-type PageProps = {
-  params: { name: string }; // Define the type of the dynamic parameter
-};
-
-export default async function CurrentPage({ params }: PageProps) {
+interface Props {
+  params: Promise<{
+    site: string;
+    name: string;
+  }>;
+}
+export default async function CurrentPage(props: Props) {
   const headersList = await headers();
   const siteId = headersList.get("x-siteid");
-
-  let { name } = params;
+  const params = await props.params;
+  let name = params.name;
   name = decodeURIComponent(name); // Replace %20 with space
 
   const currentPage = await getCurrentPage(siteId!, name);

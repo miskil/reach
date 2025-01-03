@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import LayoutRenderer from "./LayoutRenderer";
+
 import BannerSlider from "./BannerSlider";
 import TileGrid from "./TileGrid";
-import { upinsertPage } from "../../lib/actions";
 import { PageType } from "../../lib/db/schema"; // Adjust the import path as necessary
 
 interface PageDisplayProps {
@@ -41,7 +40,6 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
           initialTiles={content.tiles || []}
           adminMode={false}
           onTilesUpdate={(updatedTiles) => {}}
-          index={index}
         />
       )}
     </div>

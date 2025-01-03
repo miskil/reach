@@ -1,4 +1,3 @@
-import LayoutRenderer from "../compo/LayoutRenderer";
 import { getCurrentPage } from "../../lib/actions";
 import { headers } from "next/headers";
 import PageDisplay from "../compo/PageDisplay";

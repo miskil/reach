@@ -27,7 +27,7 @@ export default function SiteMenus({ siteid, menusdata }: SiteMenuProps) {
         >
           {menusdata.map((menu) => (
             <li key={menu.id} className="hover:underline">
-              <a href={menu.url}>{menu.title}</a>
+              <a href={menu.url}>{menu.menuItem}</a>
             </li>
           ))}
         </ul>

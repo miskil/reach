@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import LayoutRenderer from "../compo/LayoutRenderer";
 import PageRenderer from "../compo/pagerenderer";
 import { upinsertPage } from "../../lib/actions";
-import { PageType } from "../../lib/db/schema"; // Adjust the import path as necessary
+import { PageType, ContentType } from "../../lib/db/schema"; // Adjust the import path as necessary
 
 interface PageEditorProps {
   page: PageType;
@@ -87,7 +86,7 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
       </div>
       <PageRenderer
         siteId={siteId}
-        content={currentPage.content || []}
+        content={(currentPage.content as ContentType) || []}
         adminMode={adminMode}
         onUpdate={(updatedContent) =>
           setCurrentPage((prevPage: PageType | null) =>

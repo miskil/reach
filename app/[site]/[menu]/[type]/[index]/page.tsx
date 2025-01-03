@@ -1,28 +1,30 @@
-import LayoutRenderer from "../../../../../compo/LayoutRenderer";
 import { Metadata } from "next";
 import { headers } from "next/headers";
-import { getCurrentPage } from "../../../../../../lib/actions";
-import BannerSlider from "../../../../../compo/BannerSlider";
+import { getCurrentPage } from "../../../../../lib/actions";
 
-import TileGrid from "@/app/compo/TileGrid";
 import { PageType } from "@/lib/db/schema";
 import ItemDisplay from "@/app/compo/ItemDisplay";
 
-type PageProps = {
-  params: {
+interface PageProps {
+  params: Promise<{
+    site: string;
     menu: string;
-    pagelayout: string;
     type: string;
     index: number;
-  };
-};
+  }>;
+}
 
 export default async function PageComponents({ params }: PageProps) {
   const headersList = await headers();
   const siteId = headersList.get("x-siteid");
-  const { menu, pagelayout, type, index } = params;
+  const resolvedParams = await params;
+  const { site, menu, type, index } = resolvedParams;
 
-  const currentPage = await getCurrentPage(siteId!, menu);
+  if (!siteId) {
+    return <div>Site ID not found</div>;
+  }
+
+  const currentPage = await getCurrentPage(siteId, menu);
 
   if (!currentPage) {
     return <div>Page Not Found</div>;
@@ -32,9 +34,9 @@ export default async function PageComponents({ params }: PageProps) {
     <div>
       <ItemDisplay
         page={currentPage}
-        siteId={siteId!}
+        siteId={siteId}
         itemType={type}
-        index={index}
+        index={index} // Convert index to number
       />
     </div>
   );

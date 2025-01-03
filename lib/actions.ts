@@ -22,13 +22,9 @@ import {
   type NewActivityLog,
   type NewTenant,
   type NewSiteHeader,
-  type Banner,
-  type Tile,
   type Tenant,
   type PageType,
   type NewPage,
-  type NewBanner,
-  type NewTile,
   ActivityType,
   invitations,
   menus,
@@ -395,71 +391,6 @@ export async function upsertSiteData(data: FormData) {
   return { success: true };
 }
 
-export async function upinsertPageData(data: FormData) {
-  const siteId = data.get("siteId") as string | null;
-  const pageTemplate = data.get("pageTemplate") as string | null;
-  const menuItem = data.get("menuItem") as string | null;
-  const pageTitle = data.get("pageTitle") as string | null;
-
-  if (!siteId || !pageTemplate || !menuItem || !pageTitle || !pageContent) {
-    return { error: "Missing required fields" };
-  }
-
-  try {
-    await db.insert(pages).values({
-      siteId,
-      pageTemplate,
-      menuItem,
-      pagetitle: pageTitle,
-    });
-  } catch (error) {
-    console.error("Database Error:", error);
-    return {
-      error: "Failed to create or update page data. Please try again later.",
-    };
-  }
-
-  return { success: true };
-}
-async function saveBannerData(
-  siteId: string,
-  pageTemplate: string,
-  bannerImages: string[],
-  tileData: { image: string; text: string; moreLink: string }[]
-) {
-  // Save banner images
-  for (let i = 0; i < bannerImages.length; i++) {
-    await db.insert(banners).values({
-      siteId,
-      pageTemplate,
-      image_url: bannerImages[i],
-      order_num: i + 1,
-      is_active: true,
-    });
-  }
-}
-
-async function saveTilesData(
-  siteId: string,
-  pageTemplate: string,
-  bannerImages: string[],
-  tileData: { image: string; text: string; moreLink: string }[]
-) {
-  // Save banner images
-  for (let i = 0; i < tileData.length; i++) {
-    await db.insert(tiles).values({
-      siteId,
-      pageTemplate,
-      image_url: tileData[i].image,
-      text: tileData[i].text,
-      more_link: tileData[i].moreLink,
-      order_num: i + 1,
-      is_active: true,
-    });
-  }
-}
-// Save banner images
-
 export async function addMenu(data: FormData) {
   const siteId = data.get("siteId") as string;
   const menuItem = data.get("menuItem") as string;
@@ -467,10 +398,10 @@ export async function addMenu(data: FormData) {
   const order_num = parseInt(data.get("order_num") as string, 10);
 
   await db.insert(menus).values({
-    siteId,
-    menuItem,
-    url,
-    order_num,
+    siteId: siteId,
+    menuItem: menuItem,
+    url: url,
+    order_num: order_num,
   });
   revalidatePath("/menu-management");
 }

@@ -276,7 +276,6 @@ export default function SetSiteHeaderForm({
                     className="p-1 h-10 w-14 block bg-white cursor-pointer rounded-lg"
                     id="headerTextColor"
                     name="headerTextColor"
-                    value={textColor}
                     onChange={(e) => setTextColor(e.target.value)}
                     title="Choose your color"
                     ref={colorPickerRef}
