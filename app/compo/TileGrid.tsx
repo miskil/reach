@@ -20,6 +20,9 @@ interface Tile {
 
 interface TileGridProps {
   siteId: string;
+  pageName?: string;
+  idxComponent?: number;
+  idxTile?: number;
   initialTiles: Tile[];
   adminMode: boolean;
   onTilesUpdate: (tiles: Tile[]) => void;
@@ -27,6 +30,9 @@ interface TileGridProps {
 
 const TileGrid: React.FC<TileGridProps> = ({
   siteId,
+  pageName,
+  idxComponent,
+  idxTile,
   initialTiles,
   adminMode,
   onTilesUpdate,
@@ -92,13 +98,17 @@ const TileGrid: React.FC<TileGridProps> = ({
     const updatedTile: Tile = { ...tiles[index], type };
     handleTileUpdate(index, updatedTile);
   };
+  const tilesToDisplay =
+    idxComponent !== undefined && idxTile !== undefined
+      ? [tiles[idxTile]]
+      : tiles;
 
   return (
     <div>
       {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {tiles.map((tile, index) => (
+        {tilesToDisplay.map((tile, index) => (
           <div
             key={tile.id}
             className="p-0 border border-gray-300 rounded-3xl relative group"
@@ -180,7 +190,11 @@ const TileGrid: React.FC<TileGridProps> = ({
               <p>{tile.text}</p>
             )}
             <div className="flex justify-between mt-2">
-              <Link href="">
+              <Link
+                href={`/${siteId}/${pageName}/tile/${idxComponent}/${
+                  idxTile !== undefined ? idxTile : index
+                }`}
+              >
                 <button className="p-2 text-black rounded">
                   <Share />
                 </button>

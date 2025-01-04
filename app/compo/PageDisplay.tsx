@@ -38,6 +38,7 @@ const PageDisplay: React.FC<PageDisplayProps> = ({ page, siteId }) => {
 
       <PageRenderer
         siteId={siteId}
+        pageName={page.name}
         content={currentPage.content as ContentType}
         adminMode={false}
         onUpdate={(updatedContent) =>

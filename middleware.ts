@@ -11,6 +11,9 @@ export async function middleware(request: NextRequest) {
   const pathSegments = pathname ? pathname.split("/") : [];
   const siteId = pathSegments[1] || ""; // Assuming siteId is the second segment
   const menuItem = pathSegments[2] || ""; // Assuming siteId is the second segment
+  const widgetType = pathSegments[3] || ""; // Assuming widgetType is the third segment
+  const widgetidx = pathSegments[4] || ""; // Assuming widgetidx is the second segment
+  const itemidx = pathSegments[5] || ""; // Assuming itemidx is the second segment
 
   // Step 1: Add custom headers
   const requestHeaders = new Headers(request.headers);
@@ -18,6 +21,9 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-origin", origin);
   requestHeaders.set("x-siteid", siteId);
   requestHeaders.set("x-menu", menuItem);
+  requestHeaders.set("x-wtype", widgetType);
+  requestHeaders.set("x-widx", widgetidx);
+  requestHeaders.set("x-itemidx", itemidx);
 
   const sessionCookie = request.cookies.get("session");
   const isProtectedRoute = pathname.startsWith(protectedRoutes);

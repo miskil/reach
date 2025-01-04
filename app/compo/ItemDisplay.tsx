@@ -10,17 +10,28 @@ interface PageDisplayProps {
   page: PageType;
   siteId: string;
   itemType: string;
+  idxComponent: number;
   index: number;
 }
 
+interface contentType {
+  components: Array<{
+    id: string;
+    type: string;
+    widget: any;
+  }>;
+}
 const ItemDisplay: React.FC<PageDisplayProps> = ({
   page,
   siteId,
   itemType,
+  idxComponent,
   index,
 }) => {
   const [currentPage, setCurrentPage] = useState<PageType | null>(page);
-  const [content, setContent] = useState<any | null>(page.content);
+  const [content, setContent] = useState<contentType | null>(
+    page.content as contentType | null
+  );
 
   if (!currentPage) return <p>Page Not Available.</p>;
 
@@ -29,7 +40,7 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
       {itemType === "banner" && (
         <BannerSlider
           siteId={siteId}
-          initialImages={content.bannerImages || []}
+          initialImages={content!.components[idxComponent].widget.Image || []}
           adminMode={false}
           onImagesUpdate={(updatedImages) => {}}
         />
@@ -37,7 +48,10 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
       {itemType === "tile" && (
         <TileGrid
           siteId={siteId}
-          initialTiles={content.tiles || []}
+          pageName={currentPage.name}
+          idxTile={index}
+          idxComponent={idxComponent}
+          initialTiles={content!.components[idxComponent].widget.Tile || []}
           adminMode={false}
           onTilesUpdate={(updatedTiles) => {}}
         />

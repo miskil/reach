@@ -6,6 +6,7 @@ import TextEditor from "../compo/TextEditor";
 
 interface PageRendererProps {
   siteId: string;
+  pageName?: string;
   content: {
     components: Array<{
       id: string;
@@ -19,6 +20,7 @@ interface PageRendererProps {
 
 const PageRenderer: React.FC<PageRendererProps> = ({
   siteId,
+  pageName,
   content,
   adminMode,
   onUpdate,
@@ -73,11 +75,14 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     if (onUpdate) onUpdate({ components: newComponents });
   };
 
-  const renderComponent = (component: {
-    id: string;
-    type: string;
-    widget: any;
-  }) => {
+  const renderComponent = (
+    component: {
+      id: string;
+      type: string;
+      widget: any;
+    },
+    index: number
+  ) => {
     switch (component.type) {
       case "banner":
         return (
@@ -120,6 +125,8 @@ const PageRenderer: React.FC<PageRendererProps> = ({
           <TileGrid
             key={component.id}
             siteId={siteId}
+            pageName={pageName}
+            idxComponent={index}
             initialTiles={component.widget.Tile}
             adminMode={adminMode}
             onTilesUpdate={(updatedTiles) =>
@@ -153,9 +160,9 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   return (
     <div>
       {Array.isArray(components) &&
-        components.map((component) => (
+        components.map((component, index) => (
           <div key={component.id} className="relative mb-4">
-            {renderComponent(component)}
+            {renderComponent(component, index)}
             {adminMode && (
               <button
                 onClick={() => deleteComponent(component.id)}
