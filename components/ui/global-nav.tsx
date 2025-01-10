@@ -6,6 +6,7 @@ import { useSelectedLayoutSegment } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
+import { useUser } from "@/lib/auth";
 //import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 
 interface FooterMenuProps {
@@ -20,6 +21,8 @@ export interface GlobalNavProps {
 const GlobalNav: React.FC<GlobalNavProps> = ({ siteId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const close = () => setIsOpen(false);
+  const { adminMode, setAdminMode } = useUser();
+  setAdminMode(true);
 
   return (
     <div className="relative top-0 z-10 flex w-full flex-col border-b border-gray-800 lg:bottom-0 lg:z-auto  lg:border-b-0 lg:border-r lg:border-gray-800">

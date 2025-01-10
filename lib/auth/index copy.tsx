@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   createContext,
@@ -6,15 +6,13 @@ import {
   ReactNode,
   useState,
   useEffect,
-} from "react";
-import { use } from "react";
-import { User } from "@/lib/db/schema";
+} from 'react';
+import { use } from 'react';
+import { User } from '@/lib/db/schema';
 
 type UserContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
-  adminMode: boolean;
-  setAdminMode: (mode: boolean) => void;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -22,7 +20,7 @@ const UserContext = createContext<UserContextType | null>(null);
 export function useUser(): UserContextType {
   let context = useContext(UserContext);
   if (context === null) {
-    throw new Error("useUser must be used within a UserProvider");
+    throw new Error('useUser must be used within a UserProvider');
   }
   return context;
 }
@@ -36,14 +34,13 @@ export function UserProvider({
 }) {
   let initialUser = use(userPromise);
   let [user, setUser] = useState<User | null>(initialUser);
-  const [adminMode, setAdminMode] = useState<boolean>(false);
 
   useEffect(() => {
     setUser(initialUser);
   }, [initialUser]);
 
   return (
-    <UserContext.Provider value={{ user, setUser, adminMode, setAdminMode }}>
+    <UserContext.Provider value={{ user, setUser }}>
       {children}
     </UserContext.Provider>
   );

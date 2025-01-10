@@ -9,6 +9,7 @@ interface LayoutProps {
 
 export default async function AdminLayout({ children }: LayoutProps) {
   const slug = (await getUserSiteId()) || "";
+
   return (
     <div className="[color-scheme:dark]">
       <div className="flex flex-col lg:flex-row overflow-y-scroll bg-gray-1100 bg-[url('/grid.svg')] pb-36">
