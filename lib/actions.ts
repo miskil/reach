@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
 import fs from "fs";
 import path from "path";
@@ -13,6 +13,9 @@ import {
   tenants,
   siteheader,
   pages,
+  courses,
+  modules,
+  topics,
   SiteHeader,
   teamMembers,
   activityLogs,
@@ -24,6 +27,9 @@ import {
   type NewSiteHeader,
   type Tenant,
   type PageType,
+  type CourseType,
+  type ModulesType,
+  type TeamMember,
   type NewPage,
   ActivityType,
   invitations,
@@ -391,6 +397,188 @@ export async function upsertSiteData(data: FormData) {
   return { success: true };
 }
 
+export const getCourse = async (siteId: string, courseId: number) => {
+  const courseData = await db
+    .select()
+    .from(courses)
+    .where(eq(courses.id, courseId));
+
+  if (courseData.length === 0) return null;
+
+  const modulesData = await db
+    .select()
+    .from(modules)
+    .where(eq(modules.courseId, courseId));
+
+  if (!Array.isArray(modulesData)) {
+    throw new Error("modulesData should be an array");
+  }
+
+  const moduleIds = modulesData.map((module) => module.id);
+
+  const topicsData =
+    moduleIds.length > 0
+      ? await db
+          .select()
+          .from(topics)
+          .where(inArray(topics.moduleId, moduleIds))
+      : [];
+
+  if (!Array.isArray(topicsData)) {
+    throw new Error("topicsData should be an array");
+  }
+
+  return {
+    ...courseData[0],
+    modules: modulesData.map((module) => ({
+      ...module,
+      topics: topicsData.filter((topic) => topic.moduleId === module.id),
+    })),
+  };
+};
+export const saveCourse = async (siteId: string, course: any) => {
+  try {
+    if (!course.title || !siteId) {
+      throw new Error("Invalid course data");
+    }
+
+    if (course.id) {
+      // Update existing course
+      const updatedCourse = await db
+        .update(courses)
+        .set({
+          siteId: siteId,
+          title: course.title,
+          course_url: course.pageUrl,
+        })
+        .where(eq(courses.id, course.id) && eq(courses.siteId, siteId))
+        .returning();
+
+      if (!updatedCourse.length) {
+        throw new Error("Failed to update course");
+      }
+    } else {
+      // Create new course
+      const [insertedCourse] = await db
+        .insert(courses)
+        .values({
+          siteId: siteId,
+          title: course.title,
+          course_url: course.pageUrl,
+        })
+        .returning();
+      if (!insertedCourse) {
+        throw new Error("Failed to create course");
+      }
+      course.id = insertedCourse.id;
+    }
+
+    // Insert modules and topics
+    for (const module of course.modules) {
+      let insertedModule;
+      if (module.id) {
+        [insertedModule] = await db
+          .update(modules)
+          .set({
+            courseId: course.id,
+            siteId: siteId,
+            name: module.name,
+            order: module.order,
+            module_url: module.pageUrl,
+          })
+          .where(eq(modules.id, module.id))
+          .returning();
+        if (!insertedModule) {
+          throw new Error("Failed to update module");
+        }
+      } else {
+        [insertedModule] = await db
+
+          .insert(modules)
+          .values({
+            courseId: course.id,
+            siteId: siteId,
+            name: module.name,
+            order: module.order,
+            module_url: module.pageUrl,
+          })
+          .returning();
+        if (!insertedModule) {
+          throw new Error("Failed to create module");
+        }
+
+        module.id = insertedModule.id;
+      }
+      // Insert or update topics
+      const existingTopics = await db
+        .select({ id: topics.id })
+        .from(topics)
+        .where(eq(topics.moduleId, module.id));
+
+      const existingTopicIds = existingTopics.map((t) => t.id);
+      const updatedTopicIds: number[] = module.topics
+        .map((t: { id: number }) => t.id)
+        .filter(Boolean);
+
+      // Delete topics that are no longer present
+      const topicsToDelete = existingTopicIds.filter(
+        (id) => !updatedTopicIds.includes(id)
+      );
+      if (topicsToDelete.length > 0) {
+        const deletedTopics = await db
+          .delete(topics)
+          .where(inArray(topics.id, topicsToDelete))
+          .returning();
+
+        if (!deletedTopics.length) {
+          throw new Error("Failed to delete topics");
+        }
+      }
+
+      for (const topic of module.topics) {
+        if (!topic.name || !topic.pageUrl) {
+          throw new Error("Missing required topic information");
+        }
+
+        if (topic.id) {
+          const updatedTopic = await db
+            .update(topics)
+            .set({
+              name: topic.name,
+              order: topic.order,
+              topic_url: topic.pageUrl,
+            })
+            .where(eq(topics.id, topic.id))
+            .returning();
+
+          if (!updatedTopic.length) {
+            throw new Error("Failed to update topic");
+          }
+        } else {
+          const [insertedTopic] = await db
+            .insert(topics)
+            .values({
+              moduleId: module.id,
+              siteId: siteId,
+              name: topic.name,
+              order: topic.order,
+              topic_url: topic.pageUrl,
+            })
+            .returning();
+
+          if (!insertedTopic) {
+            throw new Error("Failed to create topic");
+          }
+
+          topic.id = insertedTopic.id;
+        }
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to save course");
+  }
+};
 export async function addMenu(data: FormData) {
   const siteId = data.get("siteId") as string;
   const menuItem = data.get("menuItem") as string;

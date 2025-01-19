@@ -1,22 +1,24 @@
 "use client";
 import { useState, useRef, useMemo, useEffect } from "react";
 import JoditEditor from "jodit-react";
+import { useUser } from "@/lib/auth";
 
 interface TextEditorProps {
   siteId: string;
   initialContent: string;
-  adminMode: boolean;
+  preview: boolean;
   onUpdate: (content: string) => void;
 }
 
 const TextEditor: React.FC<TextEditorProps> = ({
   siteId,
   initialContent,
-  adminMode,
+  preview,
   onUpdate,
 }) => {
   const editor = useRef(null);
   const [content, setContent] = useState<string>(initialContent);
+  const { user, setUser, adminMode, setAdminMode } = useUser();
 
   useEffect(() => {
     setContent(initialContent);
@@ -28,7 +30,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
       //  if you don't use it the editor will lose focus every time when you make any change to the editor, even an addition of one character
       /* Custom image uploader button configuretion to accept image and convert it to base64 format */
 
-      readonly: !adminMode,
+      readonly: !adminMode && preview,
       placeholder: "Type here...",
 
       uploader: {
@@ -47,7 +49,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   return (
     // Adjust the styles as necessary
     <div>
-      {adminMode ? (
+      {adminMode && preview ? (
         <JoditEditor
           ref={editor}
           value={content}

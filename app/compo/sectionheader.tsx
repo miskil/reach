@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { useUser } from "@/lib/auth";
 
 interface SectionHeaderProps {
-  adminMode: boolean;
+  preview: boolean;
   initialBackgroundColor?: string;
   initialHeaderText?: string;
   onBackgroundColorChange?: (color: string) => void;
@@ -9,7 +10,7 @@ interface SectionHeaderProps {
 }
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({
-  adminMode,
+  preview,
   initialBackgroundColor = "#ffffff",
   initialHeaderText = "Section Header",
   onBackgroundColorChange,
@@ -19,6 +20,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
     initialBackgroundColor
   );
   const [headerText, setHeaderText] = useState(initialHeaderText);
+  const { user, setUser, adminMode, setAdminMode } = useUser();
 
   const handleBackgroundColorChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -40,7 +42,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
 
   return (
     <div className="w-full" style={{ backgroundColor }}>
-      {adminMode ? (
+      {adminMode && preview ? (
         <div className="p-4">
           <input
             type="color"

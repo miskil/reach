@@ -18,19 +18,38 @@ const PageList: React.FC<PageListProps> = ({
 
   const router = useRouter();
 
-  const handleCreatePage = async () => {
-    router.push(`managepage/PageCreate`);
+  const handleCreatePage = (type: string) => {
+    if (type === "Page") router.push(`managepage/PageCreate`);
+    else if ((type = "Course")) router.push(`managepage/createCourse`);
   };
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Pages</h1>
+
+      <div className="mt-4">
+        <select
+          onChange={(e) => handleCreatePage(e.target.value)}
+          className="p-2 border border-gray-300 bg-white text-black rounded"
+          defaultValue=""
+        >
+          <option value="" disabled>
+            Create Page
+          </option>
+          <option value="Page">Page</option>
+          <option value="Course">Course</option>
+        </select>
+      </div>
+
+      {/*
       <button
         onClick={handleCreatePage}
         className="bg-blue-500 text-white px-4 py-2 rounded"
       >
         Create New Page
       </button>
+      */}
+
       <ul className="mt-4 space-y-4">
         {pages.map((page) => (
           <li

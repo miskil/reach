@@ -64,56 +64,41 @@ export const menus = pgTable("menus", {
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });
-/*
-export const pagex = pgTable("pagex", {
+
+export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
   siteId: varchar("siteId").references(() => tenants.tenant),
-  pageTemplate: varchar("pageTemplate", { length: 20 })
-    .notNull()
-    .default("page1"), //page1, page2, page3, page4
-  menuItem: varchar("menuItem").references(() => menus.menuItem),
-  pagetitle: varchar("pagetitle", { length: 255 }).notNull(),
-  is_active: boolean("is_active").default(true),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  course_url: varchar("course_url", { length: 255 }),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+export const modules = pgTable("modules", {
+  id: serial("id").primaryKey(),
+  courseId: integer("courseId").references(() => courses.id),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  order: integer("order").notNull(),
+  module_url: varchar("module_url", { length: 255 }),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+export const topics = pgTable("topics", {
+  id: serial("id").primaryKey(),
+  moduleId: integer("moduleId").references(() => modules.id),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  order: integer("order").notNull(),
+  topic_url: varchar("topic_url", { length: 255 }),
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
-export const banners = pgTable("banners", {
-  id: serial("id").primaryKey(),
-  siteId: varchar("siteId").references(() => tenants.tenant),
-  pageTemplate: varchar("pageTemplate").references(() => pagex.pageTemplate),
-  image_url: varchar("image_url", { length: 400 }).notNull(),
-  order_num: integer("order_num").notNull(), // To maintain the order of images
-  is_active: boolean("is_active").default(true),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
-});
-export const tiles = pgTable("tiles", {
-  id: serial("id").primaryKey(),
-  siteId: varchar("siteId").references(() => tenants.tenant),
-  pageTemplate: varchar("pageTemplate").references(() => pagex.pageTemplate),
-  image_url: varchar("image_url", { length: 400 }), // Image URL for the tile
-  text: text("text"), // Text content for the tile
-  more_link: varchar("more_link", { length: 400 }), // Link for the "more..." text
-  order_num: integer("order_num").notNull(), // To maintain the order of tiles
-  is_active: boolean("is_active").default(true),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
-});
-export const pageitems = pgTable("pageitems", {
-  id: serial("id").primaryKey(),
-  siteId: varchar("siteId").references(() => tenants.tenant),
-  menuItem: varchar("menuItem").references(() => menus.menuItem),
-  pagetitle: varchar("pagetitle", { length: 255 }).notNull(),
-  order_num: integer("order_num").notNull(),
-  item_type: varchar("item_type", { length: 20 }).notNull().default("text"), //text, image, video, audio, banner link
-  item_url: varchar("item_url", { length: 400 }),
-  item_text: text("item_text"), //text
-  is_active: boolean("is_active").default(true),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
-});
-*/
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   siteId: varchar("siteId").references(() => tenants.tenant),
@@ -227,6 +212,9 @@ export type NewTenant = typeof tenants.$inferInsert;
 export type NewSiteHeader = typeof siteheader.$inferInsert;
 export type SiteHeader = typeof siteheader.$inferSelect;
 export type PageType = typeof pages.$inferSelect;
+export type CourseType = typeof courses.$inferSelect;
+export type ModulesType = typeof modules.$inferSelect;
+export type TopicsType = typeof topics.$inferSelect;
 
 export type SiteMenusType = typeof menus.$inferSelect;
 export type User = typeof users.$inferSelect;

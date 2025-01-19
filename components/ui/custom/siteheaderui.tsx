@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { useState, useEffect, useRef, useMemo } from "react";
+
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import clsx from "clsx";
@@ -37,17 +38,16 @@ type SiteHeaderProps = {
 
 export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { adminMode, setAdminMode } = useUser();
-  const [headerAdminMode, setHeaderAdminMode] = useState(false);
+  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const [preview, setpreview] = useState(false);
 
   const close = () => setIsMenuOpen(false);
 
   const [loading, setLoading] = useState(false);
 
-  const { user, setUser } = useUser();
   const router = useRouter();
 
-  const adminPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin`;
+  const adminPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
 
   const editor = useRef(null);
   const [content, setContent] = useState<string>(headerdata?.siteHeader || "");
@@ -62,7 +62,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
       //  if you don't use it the editor will lose focus every time when you make any change to the editor, even an addition of one character
       /* Custom image uploader button configuretion to accept image and convert it to base64 format */
 
-      readonly: !headerAdminMode,
+      readonly: !preview,
       placeholder: "Type here...",
       toolbarAdaptive: false,
       removeButtons: [
@@ -98,7 +98,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
         imagesExtensions: ["jpg", "png", "jpeg", "gif", "svg", "webp"], // this line is not much important , use if you only strictly want to allow some specific image format
       },
     }),
-    [headerAdminMode]
+    [preview]
   );
 
   async function handleSignOut() {
@@ -126,6 +126,11 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
     setContent(newContent);
     //onUpdate(newContent);
   };
+  const handleAdminClick = () => {
+    setAdminMode(!adminMode);
+    router.refresh;
+    router.push(adminPath);
+  };
 
   return (
     <header className="border-b border-gray-200">
@@ -140,7 +145,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
           />
 
           <div>
-            {headerAdminMode ? (
+            {preview ? (
               <JoditEditor
                 ref={editor}
                 value={content}
@@ -156,14 +161,14 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
           <div>
             {adminMode && (
               <button
-                onClick={() => setHeaderAdminMode(!headerAdminMode)}
+                onClick={() => setpreview(!preview)}
                 className="bg-yellow-500 text-white px-4 py-2 rounded mt-4"
               >
-                Toggle {headerAdminMode ? "Preview" : "Admin"} Mode
+                {preview ? "Preview" : "Modify"}
               </button>
             )}
 
-            {headerAdminMode && (
+            {preview && (
               <button
                 onClick={handleSave}
                 className="bg-blue-500 text-white px-4 py-2 rounded ml-4"
@@ -188,11 +193,19 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="flex flex-col gap-1">
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem
+                  className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                  onClick={handleAdminClick}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Admin</span>
+                  {/*
                   <Link href={adminPath} className="flex w-full items-center">
                     <Home className="mr-2 h-4 w-4" />
                     <span>Admin</span>
                   </Link>
+                  */}
                 </DropdownMenuItem>
                 <form action={handleSignOut} className="w-full">
                   <button type="submit" className="flex w-full">

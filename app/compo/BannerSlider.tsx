@@ -2,6 +2,7 @@ import React, { useState, useImperativeHandle, forwardRef } from "react";
 import { ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react"; // Adjust the import path as necessary
 import ButtonUpload from "../../components/ui/custom/buttonupload";
 import { uploadImage, deleteImage } from "../../lib/actions"; // Import the server action
+import { useUser } from "@/lib/auth";
 
 interface Image {
   id: number;
@@ -11,14 +12,15 @@ interface Image {
 interface BannerSliderProps {
   siteId: string;
   initialImages: Image[];
-  adminMode: boolean;
+  preview: boolean;
   onImagesUpdate: (images: Image[]) => void;
 }
 
 const BannerSlider = forwardRef<any, BannerSliderProps>(
-  ({ siteId, initialImages, adminMode, onImagesUpdate }, ref) => {
+  ({ siteId, initialImages, preview, onImagesUpdate }, ref) => {
     const [localImages, setLocalImages] = useState<Image[]>(initialImages);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const { user, setUser, adminMode, setAdminMode } = useUser();
 
     useImperativeHandle(ref, () => ({
       getImages: () => localImages,
@@ -97,7 +99,7 @@ const BannerSlider = forwardRef<any, BannerSliderProps>(
             <ChevronRight />
           </button>
         </div>
-        {adminMode && (
+        {adminMode && preview && (
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
             <ButtonUpload
               ButtonComponent={ImageIcon}
@@ -105,7 +107,7 @@ const BannerSlider = forwardRef<any, BannerSliderProps>(
             />
           </div>
         )}
-        {adminMode && localImages.length > 0 && (
+        {adminMode && preview && localImages.length > 0 && (
           <button
             onClick={() => handleImageDelete(currentIndex)}
             className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1"

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import PageRenderer from "../compo/pagerenderer";
 import { upinsertPage } from "../../lib/actions";
 import { PageType, ContentType } from "../../lib/db/schema"; // Adjust the import path as necessary
-
+import { useUser } from "@/lib/auth";
 interface PageEditorProps {
   page: PageType;
   siteId: string;
@@ -12,7 +12,8 @@ interface PageEditorProps {
 
 const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
   const [currentPage, setCurrentPage] = useState<PageType | null>(page);
-  const [adminMode, setAdminMode] = useState(true);
+  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const [preview, setPreview] = useState(false);
 
   const handleSave = async () => {
     if (currentPage) {
@@ -69,25 +70,28 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
             className="p-1 border border-gray-300 rounded bg-white text-black"
           />
         </div>
-        <div>
-          <button
-            onClick={() => setAdminMode(!adminMode)}
-            className="bg-yellow-500 text-white px-4 py-2 rounded mt-4"
-          >
-            Toggle {adminMode ? "Preview" : "Admin"} Mode
-          </button>
-          <button
-            onClick={handleSave}
-            className="bg-blue-500 text-white px-4 py-2 rounded ml-4"
-          >
-            Save Page
-          </button>
-        </div>
+        {adminMode && (
+          <div>
+            <button
+              onClick={() => setPreview(!preview)}
+              className="bg-yellow-500 text-white px-4 py-2 rounded mt-4"
+            >
+              {preview ? "Preview" : "Modify"}
+            </button>
+            <button
+              onClick={handleSave}
+              className="bg-blue-500 text-white px-4 py-2 rounded ml-4"
+            >
+              Save Page
+            </button>
+          </div>
+        )}
       </div>
+
       <PageRenderer
         siteId={siteId}
         content={(currentPage.content as ContentType) || []}
-        adminMode={adminMode}
+        preview={preview}
         onUpdate={(updatedContent) =>
           setCurrentPage((prevPage: PageType | null) =>
             prevPage ? { ...prevPage, content: updatedContent } : null

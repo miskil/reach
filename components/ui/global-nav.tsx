@@ -24,6 +24,7 @@ const GlobalNav: React.FC<GlobalNavProps> = ({ siteId }) => {
   const { adminMode, setAdminMode } = useUser();
   setAdminMode(true);
 
+  //return <div></div>;
   return (
     <div className="relative top-0 z-10 flex w-full flex-col border-b border-gray-800 lg:bottom-0 lg:z-auto  lg:border-b-0 lg:border-r lg:border-gray-800">
       <div

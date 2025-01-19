@@ -3,10 +3,33 @@ import SectionHeader from "../compo/sectionheader";
 import TileGrid from "../compo/TileGrid";
 import BannerSlider from "../compo/BannerSlider";
 import TextEditor from "../compo/TextEditor";
+import CourseIndexComponents from "./CourseIndexComponents"; // Ensure this path is correct
+import { useUser } from "@/lib/auth";
+
+interface CourseIndexComponentsProps {
+  courses: Array<{
+    id: string;
+    title: string;
+    modules: Array<{
+      id: string;
+      title: string;
+      topics: Array<{
+        id: string;
+        title: string;
+        type: string; // 'normal' or 'test'
+      }>;
+    }>;
+  }>;
+  onAddCourse: (title: string) => void;
+  onAddModule: (courseId: string, title: string) => void;
+  onAddTopic: (moduleId: string, title: string, type: string) => void;
+  onLinkSection: (itemId: string, sectionId: string) => void;
+}
 
 interface PageRendererProps {
   siteId: string;
   pageName?: string;
+  preview: boolean;
   content: {
     components: Array<{
       id: string;
@@ -14,22 +37,32 @@ interface PageRendererProps {
       widget: any;
     }>;
   };
-  adminMode: boolean;
+
   onUpdate?: (updatedContent: any) => void;
 }
 
 const PageRenderer: React.FC<PageRendererProps> = ({
   siteId,
   pageName,
+  preview,
   content,
-  adminMode,
+
   onUpdate,
 }) => {
   const [components, setComponents] = useState(content.components || []);
+  const [courseIndexComponentsProps, setCourseIndexComponentsProps] =
+    useState<CourseIndexComponentsProps>({
+      courses: [],
+      onAddCourse: () => {},
+      onAddModule: () => {},
+      onAddTopic: () => {},
+      onLinkSection: () => {},
+    });
 
   useEffect(() => {
     setComponents(content.components || []);
   }, [content]);
+  const { user, setUser, adminMode, setAdminMode } = useUser();
 
   // Function to define the initial structure for widgets
   const initialWidgetByType = (type: string) => {
@@ -45,6 +78,9 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         return { Tile: [] }; // Empty tiles array
       case "texteditor":
         return { content: "" };
+      case "CourseIndexComponents":
+        return { CourseIndexComponentsProps: courseIndexComponentsProps };
+
       default:
         return {}; // Fallback for unknown types
     }
@@ -90,7 +126,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             key={component.id}
             siteId={siteId}
             initialImages={component.widget.Image}
-            adminMode={adminMode}
+            preview={preview}
             onImagesUpdate={(updatedImages) =>
               updateComponentWidget(component.id, {
                 ...component.widget,
@@ -103,7 +139,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         return (
           <SectionHeader
             key={component.id}
-            adminMode={adminMode}
+            preview={preview}
             initialBackgroundColor={component.widget.backgroundColor}
             initialHeaderText={component.widget.headerText}
             onBackgroundColorChange={(color) =>
@@ -128,7 +164,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             pageName={pageName}
             idxComponent={index}
             initialTiles={component.widget.Tile}
-            adminMode={adminMode}
+            preview={preview}
             onTilesUpdate={(updatedTiles) =>
               updateComponentWidget(component.id, {
                 ...component.widget,
@@ -143,13 +179,24 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             key={component.id}
             siteId={siteId}
             initialContent={component.widget.content}
-            adminMode={adminMode}
+            preview={preview}
             onUpdate={(text) =>
               updateComponentWidget(component.id, {
                 ...component.widget,
                 content: text,
               })
             }
+          />
+        );
+      case "CourseIndexComponents":
+        return (
+          <CourseIndexComponents
+            key={component.id}
+            courses={courseIndexComponentsProps.courses}
+            onAddCourse={courseIndexComponentsProps.onAddCourse}
+            onAddModule={courseIndexComponentsProps.onAddModule}
+            onAddTopic={courseIndexComponentsProps.onAddTopic}
+            onLinkSection={courseIndexComponentsProps.onLinkSection}
           />
         );
       default:
@@ -173,7 +220,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             )}
           </div>
         ))}
-      {adminMode && (
+      {adminMode && preview && (
         <div className="mt-4">
           <select
             onChange={(e) => addComponent(e.target.value)}
@@ -187,6 +234,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             <option value="sectionheader">Section Header</option>
             <option value="tilegrid">Tile Grid</option>
             <option value="texteditor">Text Editor</option>
+            <option value="CourseIndexComponents">Course Index</option>
           </select>
         </div>
       )}

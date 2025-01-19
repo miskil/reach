@@ -41,7 +41,7 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
         <BannerSlider
           siteId={siteId}
           initialImages={content!.components[idxComponent].widget.Image || []}
-          adminMode={false}
+          preview={false}
           onImagesUpdate={(updatedImages) => {}}
         />
       )}
@@ -52,7 +52,7 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
           idxTile={index}
           idxComponent={idxComponent}
           initialTiles={content!.components[idxComponent].widget.Tile || []}
-          adminMode={false}
+          preview={false}
           onTilesUpdate={(updatedTiles) => {}}
         />
       )}

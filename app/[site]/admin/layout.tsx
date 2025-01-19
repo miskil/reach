@@ -13,11 +13,11 @@ export default async function AdminLayout({ children }: LayoutProps) {
   return (
     <div className="[color-scheme:dark]">
       <div className="flex flex-col lg:flex-row overflow-y-scroll bg-gray-1100 bg-[url('/grid.svg')] pb-36">
-        {/* Sidebar (GlobalNav) */}
+        {/* Sidebar (GlobalNav)  
         <div className="lg:w-40 lg:flex-shrink-0">
           <GlobalNav siteId={slug} />
         </div>
-
+          */}
         {/* Main Content */}
         <div className="flex-1 p-4 lg:p-0 text-left">{children}</div>
       </div>
