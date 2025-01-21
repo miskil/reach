@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { and, asc, eq, sql, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
+import { Course } from "../lib/types";
 import fs from "fs";
 import path from "path";
 
@@ -397,45 +398,71 @@ export async function upsertSiteData(data: FormData) {
   return { success: true };
 }
 
-export const getCourse = async (siteId: string, courseId: number) => {
+export const getCourses = async (siteId: string) => {
   const courseData = await db
     .select()
     .from(courses)
-    .where(eq(courses.id, courseId));
-
-  if (courseData.length === 0) return null;
-
-  const modulesData = await db
-    .select()
-    .from(modules)
-    .where(eq(modules.courseId, courseId));
-
-  if (!Array.isArray(modulesData)) {
-    throw new Error("modulesData should be an array");
-  }
-
-  const moduleIds = modulesData.map((module) => module.id);
-
-  const topicsData =
-    moduleIds.length > 0
-      ? await db
-          .select()
-          .from(topics)
-          .where(inArray(topics.moduleId, moduleIds))
-      : [];
-
-  if (!Array.isArray(topicsData)) {
-    throw new Error("topicsData should be an array");
-  }
-
-  return {
-    ...courseData[0],
-    modules: modulesData.map((module) => ({
-      ...module,
-      topics: topicsData.filter((topic) => topic.moduleId === module.id),
-    })),
-  };
+    .where(eq(courses.siteId, siteId));
+  return courseData;
 };
+export async function getCoursebyTitle(
+  siteId: string,
+  courseTitle: string
+): Promise<Course | null> {
+  try {
+    const courseData = await db
+      .select()
+      .from(courses)
+      .where(and(eq(courses.title, courseTitle), eq(courses.siteId, siteId)));
+
+    if (courseData.length === 0) return null;
+
+    const modulesData = await db
+      .select()
+      .from(modules)
+      .where(eq(modules.courseId, courseData[0].id));
+
+    if (!Array.isArray(modulesData)) {
+      throw new Error("modulesData should be an array");
+    }
+
+    const moduleIds = modulesData.map((module) => module.id);
+
+    const topicsData =
+      moduleIds.length > 0
+        ? await db
+            .select()
+            .from(topics)
+            .where(inArray(topics.moduleId, moduleIds))
+        : [];
+
+    const course: Course = {
+      id: courseData[0].id,
+      title: courseData[0].title,
+      pageUrl: courseData[0].course_url || "",
+      modules: modulesData.map((module) => ({
+        id: module.id,
+        name: module.name || "",
+        pageUrl: module.module_url || null,
+        order: module.order,
+        topics: topicsData
+          .filter((topic) => topic.moduleId === module.id)
+          .map((topic) => ({
+            id: topic.id,
+            name: topic.name,
+            pageUrl: topic.topic_url,
+            order: topic.order,
+            moduleId: topic.moduleId,
+          })),
+      })),
+    };
+
+    return course;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to retrieve course");
+  }
+}
 export const saveCourse = async (siteId: string, course: any) => {
   try {
     if (!course.title || !siteId) {

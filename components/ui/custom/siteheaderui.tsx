@@ -48,7 +48,8 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   const router = useRouter();
 
   const adminPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
-
+  const ManagePagePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
+  const ManageCoursePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managecourse`;
   const editor = useRef(null);
   const [content, setContent] = useState<string>(headerdata?.siteHeader || "");
 
@@ -131,6 +132,16 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
     router.refresh;
     router.push(adminPath);
   };
+  const handleManagePageClick = () => {
+    setAdminMode(!adminMode);
+    router.refresh;
+    router.push(ManagePagePath);
+  };
+  const handleManageCourseClick = () => {
+    setAdminMode(!adminMode);
+    router.refresh;
+    router.push(ManageCoursePath);
+  };
 
   return (
     <header className="border-b border-gray-200">
@@ -206,6 +217,22 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
                     <span>Admin</span>
                   </Link>
                   */}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                  onClick={handleManagePageClick}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Manage Page</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                  onClick={handleManageCourseClick}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Manage Course</span>
                 </DropdownMenuItem>
                 <form action={handleSignOut} className="w-full">
                   <button type="submit" className="flex w-full">

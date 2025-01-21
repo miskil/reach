@@ -1,9 +1,21 @@
-import CourseEditor from "../../compo/CourseEditor";
+import CourseEditor from "../../../compo/CourseEditor";
 import { headers } from "next/headers";
+
+import { getCoursebyTitle } from "../../../../lib/actions";
+import { Course } from "@/lib/types";
+import NotFound from "../../../not-found";
+
 interface LayoutProps {
   children: React.ReactNode;
+  params: { name: string };
 }
-export default async function courselayout({ children }: LayoutProps) {
+export default async function courselayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { title: string }; // Dynamic route parameter
+}) {
   const blankCourse = {
     title: "",
     pageUrl: "",
@@ -11,12 +23,21 @@ export default async function courselayout({ children }: LayoutProps) {
   };
   const headersList = await headers();
   const siteId = headersList.get("x-siteid");
+  const currentCourse = await getCoursebyTitle(siteId!, params.title);
+  if (!currentCourse) {
+    return (
+      <div>
+        <NotFound />
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen p-4">
       <div className="flex flex-col lg:flex-row overflow-y-scroll bg-gray-1100 bg-[url('/grid.svg')] pb-36">
         {/* Sidebar  */}
         <div className="lg:w-60 lg:flex-shrink-0">
-          <CourseEditor siteId={siteId || ""} initialCourse={blankCourse} />
+          <CourseEditor siteId={siteId || ""} initialCourse={currentCourse!} />
         </div>
 
         {/* Divider */}

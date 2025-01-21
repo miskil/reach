@@ -42,35 +42,36 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">{currentPage.name}</h1>
-      <div className="flex items-center space-x-4 text-sm mb-4">
-        <div>
-          <label htmlFor="pageName" className="block mb-1">
-            Page Name:
-          </label>
-          <input
-            type="text"
-            id="pageName"
-            name="name"
-            value={currentPage.name}
-            onChange={handleInputChange}
-            className="p-1 border border-gray-300 rounded bg-white text-black"
-          />
-        </div>
+      {adminMode && (
+        <div className="flex items-center space-x-4 text-sm mb-4">
+          <div>
+            <label htmlFor="pageName" className="block mb-1">
+              Page Name:
+            </label>
+            <input
+              type="text"
+              id="pageName"
+              name="name"
+              value={currentPage.name}
+              onChange={handleInputChange}
+              className="p-1 border border-gray-300 rounded bg-white text-black"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="menuItem" className="block mb-1">
-            Menu Item (Optional):
-          </label>
-          <input
-            type="text"
-            id="menuItem"
-            name="menuItem"
-            value={currentPage.menuItem || ""}
-            onChange={handleInputChange}
-            className="p-1 border border-gray-300 rounded bg-white text-black"
-          />
-        </div>
-        {adminMode && (
+          <div>
+            <label htmlFor="menuItem" className="block mb-1">
+              Menu Item (Optional):
+            </label>
+            <input
+              type="text"
+              id="menuItem"
+              name="menuItem"
+              value={currentPage.menuItem || ""}
+              onChange={handleInputChange}
+              className="p-1 border border-gray-300 rounded bg-white text-black"
+            />
+          </div>
+
           <div>
             <button
               onClick={() => setPreview(!preview)}
@@ -85,8 +86,8 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
               Save Page
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <PageRenderer
         siteId={siteId}

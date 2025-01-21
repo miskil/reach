@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { signToken, verifyToken } from "@/lib/auth/session";
 
-const protectedRoutes = "/dashboard";
+const protectedRoutes = "admin";
 
 export async function middleware(request: NextRequest) {
   const url = new URL(request.url);
@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-itemidx", itemidx);
 
   const sessionCookie = request.cookies.get("session");
-  const isProtectedRoute = pathname.startsWith(protectedRoutes);
+  const isProtectedRoute = pathname.startsWith(`/${siteId}/${protectedRoutes}`);
 
   // Step 2: Handle protected routes and session validation
   if (isProtectedRoute && !sessionCookie) {

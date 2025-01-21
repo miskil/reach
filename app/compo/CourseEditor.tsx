@@ -1,30 +1,11 @@
 "use client";
+import { CourseType } from "@/lib/db/schema";
 // components/CourseEditor.tsx
 import { saveCourse } from "../../lib/actions";
 import { useState } from "react";
-
-type Topic = {
-  id?: number;
-  name: string;
-  pageUrl: string;
-  order: number;
-};
-
-type Module = {
-  id?: number;
-  name: string;
-  pageUrl: string;
-  topics: Topic[];
-  order: number;
-};
-
-type Course = {
-  id?: number;
-  title: string;
-  pageUrl: string;
-  modules: Module[];
-};
-
+import { Course, Module, Topic } from "../../lib/types";
+import { useUser } from "@/lib/auth";
+import Link from "next/link";
 export default function CourseEditor({
   siteId,
   initialCourse,
@@ -33,7 +14,8 @@ export default function CourseEditor({
   initialCourse: Course;
 }) {
   const [course, setCourse] = useState<Course>(initialCourse);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(true);
+  const { user, setUser, adminMode, setAdminMode } = useUser();
 
   const handleCourseChange = (field: keyof Course, value: string) => {
     setCourse({ ...course, [field]: value });
@@ -71,6 +53,7 @@ export default function CourseEditor({
       modules: [
         ...course.modules,
         {
+          id: 0,
           name: "",
           pageUrl: "",
           topics: [],
@@ -85,6 +68,7 @@ export default function CourseEditor({
     updatedModules[moduleIndex].topics = [
       ...updatedModules[moduleIndex].topics,
       {
+        id: 0,
         name: "",
         pageUrl: "",
         order: updatedModules[moduleIndex].topics.length + 1,
@@ -127,6 +111,7 @@ export default function CourseEditor({
   };
   const resetCourse = () => {
     setCourse({
+      id: 0,
       title: "",
       pageUrl: "",
       modules: [],
@@ -135,20 +120,26 @@ export default function CourseEditor({
 
   return (
     <div className="p-4 text-xs">
-      <button
-        onClick={() => setIsPreviewMode(!isPreviewMode)}
-        className="bg-gray-500 text-white px-4 py-2 rounded mb-4"
-      >
-        {isPreviewMode ? "Switch to Modify Mode" : "Switch to Preview Mode"}
-      </button>
+      {adminMode && (
+        <button
+          onClick={() => setIsPreviewMode(!isPreviewMode)}
+          className="bg-gray-500 text-white px-4 py-2 rounded mb-4"
+        >
+          {isPreviewMode ? "Switch to Modify Mode" : "Switch to Preview Mode"}
+        </button>
+      )}
+
       {/* Course Title and URL */}
       <form onSubmit={handleSaveCourse}>
         <div className="mb-4">
           <label className="block font-medium mb-2">Course Title</label>
           {isPreviewMode ? (
-            <a href={course.pageUrl} className="text-blue-500 underline">
+            <Link
+              href={`/${siteId}/course/${course.title}/${course.pageUrl}`}
+              className="text-blue-500 underline"
+            >
               {course.title}
-            </a>
+            </Link>
           ) : (
             <input
               type="text"
@@ -156,7 +147,7 @@ export default function CourseEditor({
               value={course.title}
               required
               onChange={(e) => handleCourseChange("title", e.target.value)}
-              className="w-full border rounded px-2 py-1"
+              className="w-full border bg-white rounded px-2 py-1"
             />
           )}
 
@@ -167,12 +158,12 @@ export default function CourseEditor({
             required
             hidden={isPreviewMode}
             onChange={(e) => handleCourseChange("pageUrl", e.target.value)}
-            className="w-full border rounded px-2 py-1"
+            className="w-full border bg-white rounded px-2 py-1"
           />
         </div>
 
         {/* Modules */}
-        <div className="mb-4 text-sm">
+        <div className="mb-4 text-sm bg_white">
           {course.modules.map((module, moduleIndex) => (
             <div key={moduleIndex} className="mb-4 pl-2 md:pl-3 lg:pl-2">
               <div className="flex justify-between items-center">
@@ -188,31 +179,35 @@ export default function CourseEditor({
                 )}
               </div>{" "}
               {isPreviewMode ? (
-                <a href={module.pageUrl} className="text-blue-500 underline">
+                <Link
+                  href={`/${siteId}/course/${course.title}/${module.pageUrl}`}
+                  className="text-blue-500 underline"
+                >
                   {module.name}
-                </a>
+                </Link>
               ) : (
                 <input
                   type="text"
                   placeholder="Module Title"
                   value={module.name}
                   required
+                  hidden={isPreviewMode}
                   onChange={(e) =>
                     handleModuleChange(moduleIndex, "name", e.target.value)
                   }
-                  className="w-full border rounded px-2 py-1"
+                  className="w-full border bg-white rounded px-2 py-1"
                 />
               )}
               <input
                 type="text"
                 placeholder="Module Page URL"
                 required
+                hidden={isPreviewMode}
                 value={module.pageUrl}
-                hidden
                 onChange={(e) =>
                   handleModuleChange(moduleIndex, "pageUrl", e.target.value)
                 }
-                className="w-full border rounded px-2 py-1 "
+                className="w-full border bg-white rounded px-2 py-1 "
               />
               {/* Topics */}
               <div className="mt-4">
@@ -231,12 +226,12 @@ export default function CourseEditor({
                       )}
                     </div>{" "}
                     {isPreviewMode ? (
-                      <a
-                        href={topic.pageUrl}
+                      <Link
+                        href={`/${siteId}/course/${course.title}/${topic.pageUrl}`}
                         className="text-blue-500 underline"
                       >
                         {topic.name}
-                      </a>
+                      </Link>
                     ) : (
                       <input
                         type="text"
@@ -251,7 +246,7 @@ export default function CourseEditor({
                             e.target.value
                           )
                         }
-                        className="w-full border rounded px-2 py-1"
+                        className="w-full bg-white border rounded px-2 py-1"
                       />
                     )}
                     <input
@@ -268,7 +263,7 @@ export default function CourseEditor({
                           e.target.value
                         )
                       }
-                      className="w-full border rounded px-2 py-1"
+                      className="w-full border bg-white rounded px-2 py-1"
                     />
                   </div>
                 ))}

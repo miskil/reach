@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPage, getSitePages } from "../../lib/actions";
 import { PageType } from "../../lib/db/schema";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/lib/auth";
 
 interface PageListProps {
   siteId: string;
@@ -15,31 +16,30 @@ const PageList: React.FC<PageListProps> = ({
   pages: initialPages,
 }) => {
   const [pages, setPages] = useState<PageType[]>(initialPages);
+  const { user, setUser, adminMode, setAdminMode } = useUser();
 
   const router = useRouter();
 
-  const handleCreatePage = (type: string) => {
-    if (type === "Page") router.push(`managepage/PageCreate`);
-    else if ((type = "Course")) router.push(`managepage/createCourse`);
+  const handleCreatePage = () => {
+    router.push(`managepage/PageCreate`);
   };
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Pages</h1>
 
-      <div className="mt-4">
-        <select
-          onChange={(e) => handleCreatePage(e.target.value)}
-          className="p-2 border border-gray-300 bg-white text-black rounded"
-          defaultValue=""
-        >
-          <option value="" disabled>
+      {adminMode && (
+        <div className="mt-4">
+          <button
+            onClick={() => {
+              handleCreatePage();
+            }}
+            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+          >
             Create Page
-          </option>
-          <option value="Page">Page</option>
-          <option value="Course">Course</option>
-        </select>
-      </div>
+          </button>
+        </div>
+      )}
 
       {/*
       <button
@@ -57,12 +57,16 @@ const PageList: React.FC<PageListProps> = ({
             className="flex justify-between items-center p-4 border rounded"
           >
             <span>{page.name}</span>
-            <button
-              onClick={() => router.push(`managepage/PageUpdate/${page.name}`)}
-              className="bg-green-500 text-white px-4 py-2 rounded"
-            >
-              Edit
-            </button>
+            {adminMode && (
+              <button
+                onClick={() =>
+                  router.push(`managepage/PageUpdate/${page.name}`)
+                }
+                className="bg-green-500 text-white px-4 py-2 rounded"
+              >
+                Edit
+              </button>
+            )}
           </li>
         ))}
       </ul>
