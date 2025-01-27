@@ -52,10 +52,16 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   const ManageCoursePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managecourse`;
   const editor = useRef(null);
   const [content, setContent] = useState<string>(headerdata?.siteHeader || "");
+  const [siteIcon, setSiteIcon] = useState<string>(
+    headerdata?.siteiconURL || "/favicon.ico"
+  );
+  const [newIconFile, setNewIconFile] = useState<File | null>(null);
+  const [newBgImageFile, setNewBgImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     setContent(headerdata?.siteHeader!);
-  }, [headerdata?.siteHeader]);
+    setSiteIcon(headerdata?.siteiconURL!);
+  }, [headerdata]);
 
   const config = useMemo(
     //  Using of useMemo while make custom configuration is strictly recomended
@@ -116,7 +122,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
     formData.append("headerColor", "");
     formData.append("backgroundColor", "");
     formData.append("backgroundImage", "");
-    formData.append("siteIcon", "");
+    formData.append("siteIcon", newIconFile || "");
     formData.append("existingbgImageURL", "");
 
     await upsertSiteData(formData);
@@ -142,18 +148,35 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
     router.refresh;
     router.push(ManageCoursePath);
   };
-
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setNewIconFile(file);
+      setSiteIcon(URL.createObjectURL(file)); // Show a preview of the uploaded image
+    }
+  };
   return (
     <header className="border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <Image
-            src={headerdata?.siteiconURL || "/favicon.ico"}
-            alt="Logo"
-            width={40}
-            height={40}
-            className="mr-2"
-          />
+          <div className="relative">
+            <Image
+              src={siteIcon || "/favicon.ico"}
+              alt="Logo"
+              width={40}
+              height={40}
+              className="mr-2"
+            />
+            {preview && (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                title="Upload Site Icon"
+              />
+            )}
+          </div>
 
           <div>
             {preview ? (

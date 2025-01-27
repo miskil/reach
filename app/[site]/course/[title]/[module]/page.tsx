@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { headers } from "next/headers";
-import PageEditor from "app/compo/PageEditor";
+import PageEditor from "@/components/ui/custom/PageEditor";
 
 import { getCurrentPage } from "../../../../../lib/actions";
 

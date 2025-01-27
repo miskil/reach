@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import { headers } from "next/headers";
-import CourseEditor from "app/compo/CourseEditor";
+import CourseEditor from "@/components/ui/custom/CourseEditor";
 
-import { getCoursebyTitle } from "../../../../lib/actions";
+import { getCoursebyTitle } from "@/lib/actions";
 
 interface Props {
   params: Promise<{

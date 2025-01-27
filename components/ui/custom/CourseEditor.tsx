@@ -1,9 +1,9 @@
 "use client";
 import { CourseType } from "@/lib/db/schema";
 // components/CourseEditor.tsx
-import { saveCourse } from "../../lib/actions";
+import { saveCourse } from "@/lib/actions";
 import { useState } from "react";
-import { Course, Module, Topic } from "../../lib/types";
+import { Course, Module, Topic } from "@/lib/types";
 import { useUser } from "@/lib/auth";
 import Link from "next/link";
 export default function CourseEditor({
@@ -154,7 +154,7 @@ export default function CourseEditor({
           <input
             type="text"
             placeholder="Course Page URL"
-            value={course.pageUrl}
+            value={course.pageUrl || ""}
             required
             hidden={isPreviewMode}
             onChange={(e) => handleCourseChange("pageUrl", e.target.value)}
@@ -189,7 +189,7 @@ export default function CourseEditor({
                 <input
                   type="text"
                   placeholder="Module Title"
-                  value={module.name}
+                  value={module.name || ""}
                   required
                   hidden={isPreviewMode}
                   onChange={(e) =>
@@ -203,7 +203,7 @@ export default function CourseEditor({
                 placeholder="Module Page URL"
                 required
                 hidden={isPreviewMode}
-                value={module.pageUrl}
+                value={module.pageUrl || ""}
                 onChange={(e) =>
                   handleModuleChange(moduleIndex, "pageUrl", e.target.value)
                 }
@@ -236,7 +236,7 @@ export default function CourseEditor({
                       <input
                         type="text"
                         placeholder="Topic Title"
-                        value={topic.name}
+                        value={topic.name || ""}
                         required
                         onChange={(e) =>
                           handleTopicChange(
@@ -252,7 +252,7 @@ export default function CourseEditor({
                     <input
                       type="text"
                       placeholder="Topic Page URL"
-                      value={topic.pageUrl}
+                      value={topic.pageUrl || ""}
                       required
                       hidden={isPreviewMode}
                       onChange={(e) =>

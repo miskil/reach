@@ -1,5 +1,5 @@
-import PageEditor from "app/compo/PageEditor";
-import { PageType } from "../../../../../lib/db/schema";
+import PageEditor from "@/components/ui/custom/PageEditor";
+import { PageType } from "@/lib/db/schema";
 import { headers } from "next/headers";
 
 export default async function PageCreate() {

@@ -1,6 +1,6 @@
-import { getCurrentPage } from "../../lib/actions";
+import { getCurrentPage } from "@/lib/actions";
 import { headers } from "next/headers";
-import PageDisplay from "../compo/PageDisplay";
+import PageDisplay from "@/components/ui/custom/PageDisplay";
 
 export default async function SiteHomePage() {
   const headersList = await headers();

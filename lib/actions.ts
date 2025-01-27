@@ -442,7 +442,7 @@ export async function getCoursebyTitle(
       pageUrl: courseData[0].course_url || "",
       modules: modulesData.map((module) => ({
         id: module.id,
-        name: module.name || "",
+        name: module.name || null,
         pageUrl: module.module_url || null,
         order: module.order,
         topics: topicsData
@@ -450,7 +450,7 @@ export async function getCoursebyTitle(
           .map((topic) => ({
             id: topic.id,
             name: topic.name,
-            pageUrl: topic.topic_url,
+            pageUrl: topic.topic_url || null,
             order: topic.order,
             moduleId: topic.moduleId,
           })),

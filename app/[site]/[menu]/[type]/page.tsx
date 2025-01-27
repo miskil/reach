@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { getCurrentPage } from "@/lib/actions";
 
 import { PageType } from "@/lib/db/schema";
-import ItemDisplay from "@/app/compo/ItemDisplay";
+import ItemDisplay from "@/components/ui/custom/ItemDisplay";
 
 interface PageProps {
   params: Promise<{

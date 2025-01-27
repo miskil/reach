@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { createPage, getSitePages } from "../../lib/actions";
-import { CourseType } from "../../lib/db/schema";
+import { createPage, getSitePages } from "@/lib/actions";
+import { CourseType } from "@/lib/db/schema";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/auth";
 import { Trash2, Edit } from "lucide-react";

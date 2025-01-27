@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import PageRenderer from "../compo/pagerenderer";
-import { upinsertPage } from "../../lib/actions";
-import { PageType, ContentType } from "../../lib/db/schema"; // Adjust the import path as necessary
+import PageRenderer from "./pagerenderer";
+import { upinsertPage } from "@/lib/actions";
+import { PageType, ContentType } from "@/lib/db/schema"; // Adjust the import path as necessary
 import { useUser } from "@/lib/auth";
 interface PageEditorProps {
   page: PageType;

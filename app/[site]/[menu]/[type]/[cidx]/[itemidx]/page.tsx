@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
-import PageDisplay from "app/compo/PageDisplay";
+import PageDisplay from "@/components/ui/custom/PageDisplay";
 import { getCurrentPage } from "lib/actions";
 import { PageType } from "lib/db/schema";
-import ItemDisplay from "@/app/compo/ItemDisplay";
+import ItemDisplay from "@/components/ui/custom/ItemDisplay";
 interface PageProps {
   params: Promise<{
     site: string;

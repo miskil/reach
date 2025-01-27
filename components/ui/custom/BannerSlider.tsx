@@ -1,7 +1,7 @@
 import React, { useState, useImperativeHandle, forwardRef } from "react";
 import { ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react"; // Adjust the import path as necessary
-import ButtonUpload from "../../components/ui/custom/buttonupload";
-import { uploadImage, deleteImage } from "../../lib/actions"; // Import the server action
+import ButtonUpload from "./buttonupload";
+import { uploadImage, deleteImage } from "@/lib/actions"; // Import the server action
 import { useUser } from "@/lib/auth";
 
 interface Image {

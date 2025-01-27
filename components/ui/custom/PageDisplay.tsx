@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { upinsertPage } from "../../lib/actions";
-import { PageType } from "../../lib/db/schema"; // Adjust the import path as necessary
-import { ContentType } from "../../lib/db/schema";
+import { upinsertPage } from "@/lib/actions";
+import { PageType } from "@/lib/db/schema"; // Adjust the import path as necessary
+import { ContentType } from "@/lib/db/schema";
 interface PageContent {
   components: Array<{
     id: string;
@@ -12,7 +12,7 @@ interface PageContent {
   }>;
 }
 
-import PageRenderer from "../compo/pagerenderer";
+import PageRenderer from "./pagerenderer";
 
 interface PageDisplayProps {
   page: PageType;

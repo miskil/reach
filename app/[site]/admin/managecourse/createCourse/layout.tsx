@@ -1,19 +1,13 @@
-import CourseEditor from "../../../../compo/CourseEditor";
+import CourseEditor from "@/components/ui/custom/CourseEditor";
 import { headers } from "next/headers";
 
-import { getCoursebyTitle } from "../../../../../lib/actions";
+import { getCoursebyTitle } from "@/lib/actions";
 import { Course } from "@/lib/types";
 
-interface LayoutProps {
-  children: React.ReactNode;
-  params: { name: string };
-}
 export default async function courselayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: { title: string }; // Dynamic route parameter
 }) {
   const blankCourse = {
     id: 0,

@@ -1,21 +1,18 @@
-import CourseEditor from "../../../compo/CourseEditor";
+import CourseEditor from "@/components/ui/custom/CourseEditor";
 import { headers } from "next/headers";
 
-import { getCoursebyTitle } from "../../../../lib/actions";
+import { getCoursebyTitle } from "@/lib/actions";
 import { Course } from "@/lib/types";
 import NotFound from "../../../not-found";
 
-interface LayoutProps {
+interface Props {
   children: React.ReactNode;
-  params: { name: string };
+  params: Promise<{
+    site: string;
+    title: string;
+  }>;
 }
-export default async function courselayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { title: string }; // Dynamic route parameter
-}) {
+export default async function courselayout({ children, params }: Props) {
   const blankCourse = {
     title: "",
     pageUrl: "",
@@ -23,7 +20,9 @@ export default async function courselayout({
   };
   const headersList = await headers();
   const siteId = headersList.get("x-siteid");
-  const currentCourse = await getCoursebyTitle(siteId!, params.title);
+  const resolvedParams = await params;
+  const courseTitle = resolvedParams.title;
+  const currentCourse = await getCoursebyTitle(siteId!, courseTitle);
   if (!currentCourse) {
     return (
       <div>

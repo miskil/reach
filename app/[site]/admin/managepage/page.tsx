@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import PageList from "../../../compo/pagelist";
+import PageList from "@/components/ui/custom/pagelist";
 import { getSitePages } from "@/lib/actions";
 
 export default async function ManagePage() {

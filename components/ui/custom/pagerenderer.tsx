@@ -1,30 +1,9 @@
 import React, { useState, useEffect } from "react";
-import SectionHeader from "../compo/sectionheader";
-import TileGrid from "../compo/TileGrid";
-import BannerSlider from "../compo/BannerSlider";
-import TextEditor from "../compo/TextEditor";
-import CourseIndexComponents from "./CourseIndexComponents"; // Ensure this path is correct
+import SectionHeader from "./sectionheader";
+import TileGrid from "./TileGrid";
+import BannerSlider from "./BannerSlider";
+import TextEditor from "./TextEditor";
 import { useUser } from "@/lib/auth";
-
-interface CourseIndexComponentsProps {
-  courses: Array<{
-    id: string;
-    title: string;
-    modules: Array<{
-      id: string;
-      title: string;
-      topics: Array<{
-        id: string;
-        title: string;
-        type: string; // 'normal' or 'test'
-      }>;
-    }>;
-  }>;
-  onAddCourse: (title: string) => void;
-  onAddModule: (courseId: string, title: string) => void;
-  onAddTopic: (moduleId: string, title: string, type: string) => void;
-  onLinkSection: (itemId: string, sectionId: string) => void;
-}
 
 interface PageRendererProps {
   siteId: string;
@@ -50,14 +29,6 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   onUpdate,
 }) => {
   const [components, setComponents] = useState(content.components || []);
-  const [courseIndexComponentsProps, setCourseIndexComponentsProps] =
-    useState<CourseIndexComponentsProps>({
-      courses: [],
-      onAddCourse: () => {},
-      onAddModule: () => {},
-      onAddTopic: () => {},
-      onLinkSection: () => {},
-    });
 
   useEffect(() => {
     setComponents(content.components || []);
@@ -78,8 +49,6 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         return { Tile: [] }; // Empty tiles array
       case "texteditor":
         return { content: "" };
-      case "CourseIndexComponents":
-        return { CourseIndexComponentsProps: courseIndexComponentsProps };
 
       default:
         return {}; // Fallback for unknown types
@@ -188,17 +157,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             }
           />
         );
-      case "CourseIndexComponents":
-        return (
-          <CourseIndexComponents
-            key={component.id}
-            courses={courseIndexComponentsProps.courses}
-            onAddCourse={courseIndexComponentsProps.onAddCourse}
-            onAddModule={courseIndexComponentsProps.onAddModule}
-            onAddTopic={courseIndexComponentsProps.onAddTopic}
-            onLinkSection={courseIndexComponentsProps.onLinkSection}
-          />
-        );
+
       default:
         return null;
     }

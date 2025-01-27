@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 import BannerSlider from "./BannerSlider";
 import TileGrid from "./TileGrid";
-import { PageType } from "../../lib/db/schema"; // Adjust the import path as necessary
+import { PageType } from "@/lib/db/schema"; // Adjust the import path as necessary
 
 interface PageDisplayProps {
   page: PageType;

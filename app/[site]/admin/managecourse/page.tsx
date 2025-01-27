@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import CourseList from "../../../compo/CourseList";
+import CourseList from "@/components/ui/custom/CourseList";
 import { getCourses } from "@/lib/actions";
 
 export default async function ManageCourses() {

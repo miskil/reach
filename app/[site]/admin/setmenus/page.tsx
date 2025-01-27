@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import SetMenusForm from "@/components/ui/custom/setmenusform";
-import SiteHeader from "../../../../components/ui/custom/siteheader";
+import SiteHeader from "@/components/ui/custom/siteheader";
 import { getMenuItems } from "@/lib/actions";
 
 export default async function SetMenusPage() {

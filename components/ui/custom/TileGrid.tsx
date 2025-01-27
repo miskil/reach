@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import ButtonUpload from "../../components/ui/custom/buttonupload"; // Adjust the import path as necessary
-import ButtonDelete from "../../components/ui/custom/buttondelete"; // Ensure this path is correct
+import ButtonUpload from "./buttonupload"; // Adjust the import path as necessary
+import ButtonDelete from "./buttondelete"; // Ensure this path is correct
 import Link from "next/link";
-import { uploadImage, deleteImage } from "../../lib/actions"; // Import the server action
+import { uploadImage, deleteImage } from "@/lib/actions"; // Import the server action
 import {
   Image as ImageIcon,
   Trash2,
