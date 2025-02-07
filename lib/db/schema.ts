@@ -8,6 +8,7 @@ import {
   unique,
   boolean,
   jsonb,
+  numeric,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -98,7 +99,19 @@ export const topics = pgTable("topics", {
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });
-
+export const paymentPages = pgTable("payment_pages", {
+  id: serial("id").primaryKey(),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+  successUrl: text("success_url").notNull(),
+  cancelUrl: text("cancel_url").notNull(),
+  customFields: jsonb("custom_fields"),
+  createdAt: text("created_at").default("now()"),
+  updatedAt: text("updated_at").default("now()"),
+});
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   siteId: varchar("siteId").references(() => tenants.tenant),
@@ -215,6 +228,7 @@ export type PageType = typeof pages.$inferSelect;
 export type CourseType = typeof courses.$inferSelect;
 export type ModulesType = typeof modules.$inferSelect;
 export type TopicsType = typeof topics.$inferSelect;
+export type paymentPagesType = typeof paymentPages.$inferSelect;
 
 export type SiteMenusType = typeof menus.$inferSelect;
 export type User = typeof users.$inferSelect;

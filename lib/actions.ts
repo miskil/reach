@@ -20,6 +20,8 @@ import {
   SiteHeader,
   teamMembers,
   activityLogs,
+  paymentPages,
+  type paymentPagesType,
   type NewUser,
   type NewTeam,
   type NewTeamMember,
@@ -606,6 +608,32 @@ export const saveCourse = async (siteId: string, course: any) => {
     throw new Error("Failed to save course");
   }
 };
+
+export async function createPaymentPage(data: {
+  title: string;
+  description: string;
+  amount: number;
+  currency: string;
+  successUrl: string;
+  cancelUrl: string;
+  customFields: string[];
+}) {
+  try {
+    const newPaymentPage = {
+      id: 0,
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await db.insert(paymentPages).values(newPaymentPage);
+
+    return { success: true, paymentPage: newPaymentPage };
+  } catch (error) {
+    console.error("Failed to create payment page:", error);
+    return { success: false, error: "Failed to create payment page." };
+  }
+}
 export async function addMenu(data: FormData) {
   const siteId = data.get("siteId") as string;
   const menuItem = data.get("menuItem") as string;

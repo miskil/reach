@@ -50,6 +50,8 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   const adminPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
   const ManagePagePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
   const ManageCoursePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managecourse`;
+  const Home = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}`;
+
   const editor = useRef(null);
   const [content, setContent] = useState<string>(headerdata?.siteHeader || "");
   const [siteIcon, setSiteIcon] = useState<string>(
@@ -160,13 +162,15 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <div className="relative">
-            <Image
-              src={siteIcon || "/favicon.ico"}
-              alt="Logo"
-              width={40}
-              height={40}
-              className="mr-2"
-            />
+            <Link href={Home}>
+              <Image
+                src={siteIcon || "/favicon.ico"}
+                alt="Logo"
+                width={40}
+                height={40}
+                className="mr-2"
+              />
+            </Link>
             {preview && (
               <input
                 type="file"
