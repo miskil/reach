@@ -1,12 +1,13 @@
-import { desc, and, eq, isNull } from 'drizzle-orm';
-import { db } from './drizzle';
-import { activityLogs, siteheader, teamMembers, teams, users } from './schema';
-import { cookies } from 'next/headers';
-import { verifyToken } from '@/lib/auth/session';
+import { desc, and, eq, isNull } from "drizzle-orm";
+import { db } from "./drizzle";
+import { activityLogs, siteheader, teamMembers, teams, users } from "./schema";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/auth/session";
 
 export async function getUser() {
-  const sessionCookie = (await cookies()).get('session');
+  const sessionCookie = (await cookies()).get("session");
   if (!sessionCookie || !sessionCookie.value) {
+    console.log("No session cookie found");
     return null;
   }
 
@@ -14,12 +15,14 @@ export async function getUser() {
   if (
     !sessionData ||
     !sessionData.user ||
-    typeof sessionData.user.id !== 'number'
+    typeof sessionData.user.id !== "number"
   ) {
+    console.log("No session data found");
     return null;
   }
 
   if (new Date(sessionData.expires) < new Date()) {
+    console.log("No session data expired");
     return null;
   }
 
@@ -30,13 +33,12 @@ export async function getUser() {
     .limit(1);
 
   if (user.length === 0) {
+    console.log("No user found");
     return null;
   }
-
+  console.log("User found");
   return user[0];
 }
-
-
 
 export async function getTeamByStripeCustomerId(customerId: string) {
   const result = await db
@@ -83,7 +85,7 @@ export async function getUserWithTeam(userId: number) {
 export async function getActivityLogs() {
   const user = await getUser();
   if (!user) {
-    throw new Error('User not authenticated');
+    throw new Error("User not authenticated");
   }
 
   return await db

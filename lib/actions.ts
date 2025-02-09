@@ -671,6 +671,7 @@ export const createTenant = async (tenant: string) => {
     return { error: "Site URL already taken. Try other name" };
   }
   const user = await getUser();
+  console.log("Got User..." + user);
   if (user) {
     await db
       .update(users)
