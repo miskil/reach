@@ -112,7 +112,10 @@ export async function updateSiteParameters(data: FormData) {
   const filePath = path.join(uploadsDir, iconPath);
 
   // Save the file to the filesystem
-  await fs.promises.writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+  await fs.promises.writeFile(
+    filePath,
+    new Uint8Array(await file.arrayBuffer())
+  );
 
   // Update the database
   await db
@@ -312,10 +315,15 @@ export async function uploadImage(siteId: string, image: File | null) {
       // Save the file to the filesystem
       await fs.promises.writeFile(
         filePath,
-        Buffer.from(await image.arrayBuffer())
+        new Uint8Array(await image.arrayBuffer())
       );
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error uploading image:", error.message);
+    } else {
+      console.error("Unknown error occurred while uploading image.");
+    }
     return "";
   }
   return iconPath;
