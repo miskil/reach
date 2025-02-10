@@ -36,7 +36,7 @@ export async function getUser() {
     console.log("No user found");
     return null;
   }
-  console.log("User found");
+  console.log("User found" + user[0].name);
   return user[0];
 }
 

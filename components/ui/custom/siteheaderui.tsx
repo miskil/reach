@@ -39,6 +39,7 @@ type SiteHeaderProps = {
 export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, setUser, adminMode, setAdminMode } = useUser();
+  console.log("user in SiteHeaderUI", user);
   const [preview, setpreview] = useState(false);
 
   const close = () => setIsMenuOpen(false);
