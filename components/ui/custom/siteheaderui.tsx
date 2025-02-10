@@ -170,6 +170,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
                 width={40}
                 height={40}
                 className="mr-2"
+                unoptimized={true}
               />
             </Link>
             {preview && (
