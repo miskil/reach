@@ -317,6 +317,8 @@ export async function uploadImage(siteId: string, image: File | null) {
         filePath,
         new Uint8Array(await image.arrayBuffer())
       );
+      // Set file permissions to read and write for the owner, and read for others
+      await fs.promises.chmod(filePath, 0o755);
     }
   } catch (error) {
     if (error instanceof Error) {
