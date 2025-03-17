@@ -16,7 +16,7 @@ import { Trash2, ImageUp, CirclePlus } from "lucide-react";
 
 import { ActionState } from "@/lib/auth/middleware";
 import { SiteHeader as SiteHeaderType } from "@/lib/db/schema";
-import { getSiteHeaderElements, deleteImage } from "@/lib/actions";
+import { getSiteHeaderElements } from "@/lib/actions";
 
 type SiteHeaderProps = {
   siteid: string;
@@ -141,7 +141,7 @@ export default function SetSiteHeaderForm({
   const handleSiteIconDeleteClick = () => {
     setIconPreview("");
     setSiteicon(null);
-    deleteImage(siteid, existingiconURL);
+    //deleteImage(siteid, existingiconURL);
     setexitingIconURL("");
     // delete the existing icon
   };

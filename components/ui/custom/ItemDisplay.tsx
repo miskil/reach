@@ -43,6 +43,7 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
           initialImages={content!.components[idxComponent].widget.Image || []}
           preview={false}
           onImagesUpdate={(updatedImages) => {}}
+          addImageUrlToBeDeleted={(imageUrl) => {}}
         />
       )}
       {itemType === "tile" && (
@@ -54,6 +55,7 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
           initialTiles={content!.components[idxComponent].widget.Tile || []}
           preview={false}
           onTilesUpdate={(updatedTiles) => {}}
+          addImageUrlToBeDeleted={(imageUrl) => {}}
         />
       )}
     </div>

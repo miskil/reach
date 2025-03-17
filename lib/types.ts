@@ -19,3 +19,19 @@ export interface Course {
   pageUrl: string | null;
   modules: Module[];
 }
+export interface Tile {
+  id: number;
+  image: string;
+  text: string;
+  type: string;
+  more: string;
+  imageFile?: File;
+}
+export interface TileWidget {
+  Tile: Tile[];
+}
+export interface Image {
+  id: number;
+  url: string;
+  imageFile?: File;
+}

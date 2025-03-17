@@ -6,6 +6,8 @@ import { db } from "@/lib/db/drizzle";
 import { Course } from "../lib/types";
 import fs from "fs";
 import path from "path";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 
 import {
   User,
@@ -287,15 +289,6 @@ export async function updatePage(id: string, content: any) {
   revalidatePath(`/editor/${id}`); // Revalidate the editor page
   return updatedPage[0];
 }
-export async function deleteImage(siteId: string, imagePath: string) {
-  try {
-    const filePath = path.join(process.cwd(), "public", imagePath);
-    await fs.promises.rm(filePath);
-  } catch {
-    return "error";
-  }
-  return "Deleted";
-}
 
 export async function uploadImage(siteId: string, image: File | null) {
   let iconPath: string = "",
@@ -329,6 +322,102 @@ export async function uploadImage(siteId: string, image: File | null) {
     return "";
   }
   return iconPath;
+}
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+export async function getPresignedUrl(
+  siteId: string,
+  fileName: string,
+  fileType: string
+) {
+  try {
+    const key = `uploads/${siteId}/${Date.now()}-${fileName}`;
+
+    const { url, fields } = await createPresignedPost(s3, {
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: key,
+      Fields: { "Content-Type": fileType },
+      Expires: 60, // URL expires in 60 seconds
+      Conditions: [["content-length-range", 0, 10 * 1024 * 1024]], // Limit file size to 10MB
+    });
+
+    return { url, fields, key };
+  } catch (error) {
+    console.error("Error getting presigned URL:", error);
+    return { error: "Failed to get presigned URL" };
+  }
+}
+export const handleS3ImageUpload = async (file: File, siteId: string) => {
+  if (file) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      // Step 1: Get the presigned URL from the server
+      const { url, fields, key } = await getPresignedUrl(
+        siteId,
+        file.name,
+        file.type
+      );
+
+      if (url && fields && key) {
+        // Step 2: Prepare the form data for S3 upload
+        const formData = new FormData();
+        Object.entries(fields).forEach(([key, value]) =>
+          formData.append(key, value)
+        );
+
+        formData.append("file", file); // Append the actual file
+
+        // Step 3: Upload the file to S3
+        const uploadRes = await fetch(url, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (uploadRes.ok) {
+          console.log(process.env.AWS_BUCKET_NAME); // Check if this is valid
+          console.log(process.env.AWS_REGION); // Check if this is valid
+          console.log(key); // Check if the key has a valid value             s
+          const imageURL = `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${key}`;
+          console.log(`🔗 URL: ${imageURL}`);
+          return imageURL;
+        } else {
+          console.error("❌ Upload failed");
+          return null;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to upload image:", error);
+      return null;
+    }
+  }
+};
+export async function deleteS3Image(siteId: string, imagePath: string) {
+  try {
+    const key = imagePath.replace(
+      `https://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/`,
+      ""
+    );
+
+    const deleteParams = {
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: key,
+    };
+
+    await s3.send(new DeleteObjectCommand(deleteParams));
+  } catch (error) {
+    console.error("Error deleting image from S3:", error);
+    return "error";
+  }
+  return "Deleted";
 }
 
 export async function upsertSiteData(data: FormData) {

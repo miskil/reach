@@ -20,13 +20,15 @@ const ButtonUpload: React.FC<ButtonUploadProps> = ({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       onFileUpload(event.target.files[0]);
+      event.target.files = null;
+      event.target.value = "";
     }
   };
 
   return (
     <div>
       <button type="button" onClick={handleButtonClick}>
-        <div className="bg-gray-200 rounded-full p-2">
+        <div className="bg-transparent text-grey px-2 py-1">
           <ButtonComponent />
         </div>
       </button>

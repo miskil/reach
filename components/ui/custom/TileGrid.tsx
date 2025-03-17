@@ -1,23 +1,19 @@
 import React, { useState } from "react";
 import ButtonUpload from "./buttonupload"; // Adjust the import path as necessary
 import ButtonDelete from "./buttondelete"; // Ensure this path is correct
+import { Tile } from "@/lib/types"; // Adjust the import path as necessary
 import Link from "next/link";
-import { uploadImage, deleteImage } from "@/lib/actions"; // Import the server action
+
 import {
   Image as ImageIcon,
   Trash2,
   HeartHandshake,
   ScanBarcode,
   Share,
+  X,
 } from "lucide-react"; // Adjust the import path as necessary
+
 import { useUser } from "@/lib/auth";
-interface Tile {
-  id: number;
-  image: string;
-  text: string;
-  type: string;
-  more: string;
-}
 
 interface TileGridProps {
   siteId: string;
@@ -26,7 +22,10 @@ interface TileGridProps {
   idxTile?: number;
   initialTiles: Tile[];
   preview: boolean;
+
   onTilesUpdate: (tiles: Tile[]) => void;
+
+  addImageUrlToBeDeleted: (imageUrl: string) => void;
 }
 
 const TileGrid: React.FC<TileGridProps> = ({
@@ -37,6 +36,8 @@ const TileGrid: React.FC<TileGridProps> = ({
   initialTiles,
   preview,
   onTilesUpdate,
+
+  addImageUrlToBeDeleted,
 }) => {
   const [tiles, setTiles] = useState<Tile[]>(initialTiles);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -56,37 +57,35 @@ const TileGrid: React.FC<TileGridProps> = ({
   };
 
   const handleDeleteTile = (index: number) => {
+    if (tiles[index].image) {
+      addImageUrlToBeDeleted(tiles[index].image);
+    }
     const updatedTiles = tiles.filter((_, i) => i !== index);
     setTiles(updatedTiles);
+    onTilesUpdate(updatedTiles);
+  };
+  const handleDeleteTileImage = async (index: number) => {
+    if (tiles[index].image) {
+      addImageUrlToBeDeleted(tiles[index].image);
+      const updatedTile: Tile = { ...tiles[index], image: "" };
+      handleTileUpdate(index, updatedTile);
+    }
   };
 
   const handleImageUpload = async (file: File, index: number) => {
-    setErrorMessage(null); // Reset error message before starting the upload
-
-    if (file) {
-      try {
-        if (file.size > 1024 * 1024) {
-          throw new Error("File size exceeds 1MB");
-        }
-        const formData = new FormData();
-        formData.append("file", file);
-        const imageURL = await uploadImage(siteId, file); // Call the server action
-
-        if (!imageURL) {
-          throw new Error("Failed to upload image");
-        }
-
-        const updatedTile: Tile = { ...tiles[index], image: imageURL };
-        handleTileUpdate(index, updatedTile);
-      } catch (error) {
-        //console.error("Failed to upload image:", error);
-        setErrorMessage(
-          `Error: ${(error as any).code || "Unknown"} - ${
-            (error as any).message || "Failed to upload image."
-          }`
-        );
-      }
+    if (tiles[index].image) {
+      addImageUrlToBeDeleted(tiles[index].image);
     }
+    const imageURL = URL.createObjectURL(file);
+
+    if (!imageURL) return;
+
+    const updatedTile: Tile = {
+      ...tiles[index],
+      image: imageURL,
+      imageFile: file,
+    };
+    handleTileUpdate(index, updatedTile);
   };
 
   const handleAddTile = () => {
@@ -124,6 +123,137 @@ const TileGrid: React.FC<TileGridProps> = ({
         {tilesToDisplay.map((tile, index) => (
           <div
             key={tile.id}
+            className="flex flex-col items-center w-full max-w-lg mx-auto  justify-end pb-4 shadow-lg bg-white relative"
+          >
+            {adminMode && preview && (
+              <button
+                className="absolute top-0 right-0 p-2  text-black rounded z-10"
+                onClick={() => handleDeleteTile(index)}
+              >
+                <X />
+              </button>
+            )}
+            {tile.image ? (
+              <div className="relative">
+                <img
+                  src={tile.image}
+                  alt={`Tile ${index}`}
+                  className="w-full h-full object-cover "
+                />
+                {/* Image Buttons */}
+                {adminMode && preview && (
+                  <div className="absolute bottom-0  left-1/2 transform -translate-x-1/2 w-2/3 flex justify-center gap-1 mb-1  rounded bg-white/50 text-black rounded-3xl">
+                    <ButtonUpload
+                      ButtonComponent={ImageIcon}
+                      onFileUpload={(file) => handleImageUpload(file, index)}
+                    />
+                    <div>
+                      <button
+                        className="text-black-500"
+                        onClick={() => handleDeleteTileImage(index)}
+                      >
+                        <div className="bg-transparent text-grey px-2 py-1">
+                          <Trash2 />
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                {adminMode && preview && (
+                  <div className="relative">
+                    <ButtonUpload
+                      ButtonComponent={ImageIcon}
+                      onFileUpload={(file) => handleImageUpload(file, index)}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Image Buttons */}
+            {adminMode && preview ? (
+              <div>
+                <textarea
+                  value={tile.text}
+                  onChange={(e) => handleTextChange(index, e.target.value)}
+                  className="w-full  border border-gray-300 rounded bg-white text-black "
+                />
+
+                {/* Bottom Row */}
+                <div className="flex justify-between w-full items-center border-t pt-2">
+                  <button className="p-2 text-black rounded">
+                    <Share />
+                  </button>
+
+                  <select
+                    className="bg-white border border-gray-300 rounded p-2 text-xs"
+                    value={tile.type || "info"}
+                    onChange={(e) => handleTypeChange(index, e.target.value)}
+                  >
+                    <option value="">Type</option>
+                    <option value="event">Event</option>
+                    <option value="info">Info</option>
+                    <option value="project">Project</option>
+                    <option value="product">Product</option>
+                  </select>
+
+                  {/* More Button with Modal */}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p>{tile.text}</p>
+                <div className="flex justify-between w-full items-center border-t pt-2">
+                  <Link
+                    href={`/${siteId}/${pageName}/tile/${idxComponent}/${
+                      idxTile !== undefined ? idxTile : index
+                    }`}
+                  >
+                    <button className="p-2 text-black rounded">
+                      <Share />
+                    </button>
+                  </Link>
+
+                  {tile.type === "product" && (
+                    <button className="p-2 bg-green-500 text-white rounded">
+                      <ScanBarcode />
+                    </button>
+                  )}
+                  {tile.type === "project" && (
+                    <button className="p-2 bg-red-500 text-white rounded">
+                      <HeartHandshake />
+                    </button>
+                  )}
+
+                  {/* More Button with Modal */}
+                </div>
+              </div>
+            )}
+
+            {/* Image */}
+          </div>
+        ))}
+        {adminMode && preview && (
+          <div className="p-4 border border-gray-300 rounded flex items-center justify-center h-48">
+            <button
+              onClick={handleAddTile}
+              className="p-2 bg-blue-500 text-white rounded"
+            >
+              Add Tile
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+{
+  /** 
+          <div
+            key={tile.id}
             className="p-0 border border-gray-300 rounded-3xl relative group"
           >
             <div className="mb-4">
@@ -138,18 +268,20 @@ const TileGrid: React.FC<TileGridProps> = ({
               )}
               {adminMode && preview && (
                 <div className="absolute top-0 left-0 right-0 flex items-center justify-start mt-2 hidden group-hover:flex">
-                  {/* Upload Button */}
+                  {/* Upload Button 
                   <div className="pr-2 relative group">
                     <ButtonUpload
                       ButtonComponent={ImageIcon}
                       onFileUpload={(file) => handleImageUpload(file, index)}
                     />
+                    {/** 
                     <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100">
                       Upload Image
                     </span>
+                    
                   </div>
 
-                  {/* Delete Button */}
+                  {/* Delete Button 
                   <div className="relative group">
                     <button
                       className="text-black-500"
@@ -159,9 +291,11 @@ const TileGrid: React.FC<TileGridProps> = ({
                         <Trash2 />
                       </div>
                     </button>
+                    {/** 
                     <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100">
                       Delete Tile
                     </span>
+                    *
                   </div>
                   <div className="relative group ml-auto">
                     <select
@@ -175,9 +309,11 @@ const TileGrid: React.FC<TileGridProps> = ({
                       <option value="project">Project</option>
                       <option value="product">Product</option>
                     </select>
+                    {/*
                     <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-gray-700 rounded opacity-0 group-hover:opacity-100">
                       Select Category
                     </span>
+                    *
                   </div>
                 </div>
               )}
@@ -232,20 +368,9 @@ const TileGrid: React.FC<TileGridProps> = ({
               </div>
             )}
           </div>
-        ))}
-        {adminMode && preview && (
-          <div className="p-4 border border-gray-300 rounded flex items-center justify-center h-48">
-            <button
-              onClick={handleAddTile}
-              className="p-2 bg-blue-500 text-white rounded"
-            >
-              Add Tile
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+  
+  
+  */
+}
 
 export default TileGrid;

@@ -4,6 +4,7 @@ import TileGrid from "./TileGrid";
 import BannerSlider from "./BannerSlider";
 import TextEditor from "./TextEditor";
 import { useUser } from "@/lib/auth";
+import { Tile, Image, TileWidget } from "@/lib/types"; // Adjust the import path as necessary
 
 interface PageRendererProps {
   siteId: string;
@@ -18,6 +19,8 @@ interface PageRendererProps {
   };
 
   onUpdate?: (updatedContent: any) => void;
+
+  addImageUrlToBeDeleted: (imageUrl: string) => void;
 }
 
 const PageRenderer: React.FC<PageRendererProps> = ({
@@ -27,6 +30,8 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   content,
 
   onUpdate,
+
+  addImageUrlToBeDeleted,
 }) => {
   const [components, setComponents] = useState(content.components || []);
 
@@ -67,6 +72,26 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   };
 
   const deleteComponent = (id: string) => {
+    const componentToDelete = components.find(
+      (component) => component.id === id
+    );
+    if (componentToDelete) {
+      if (componentToDelete.type === "tilegrid") {
+        for (const tile of (componentToDelete.widget as TileWidget).Tile) {
+          if (tile.image) {
+            addImageUrlToBeDeleted(tile.image);
+          }
+        }
+      } else if (componentToDelete.type === "Banner") {
+        const images = componentToDelete.widget as Image[];
+        for (const image of images) {
+          if (image.url) {
+            addImageUrlToBeDeleted(image.url);
+          }
+        }
+      }
+    }
+
     const newComponents = components.filter((component) => component.id !== id);
     setComponents(newComponents);
     if (onUpdate) onUpdate({ components: newComponents });
@@ -102,6 +127,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
                 Image: updatedImages,
               })
             }
+            addImageUrlToBeDeleted={addImageUrlToBeDeleted}
           />
         );
       case "sectionheader":
@@ -140,6 +166,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
                 Tile: updatedTiles,
               })
             }
+            addImageUrlToBeDeleted={addImageUrlToBeDeleted}
           />
         );
       case "texteditor":

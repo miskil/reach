@@ -46,6 +46,7 @@ const PageDisplay: React.FC<PageDisplayProps> = ({ page, siteId }) => {
             prevPage ? { ...prevPage, content: updatedContent } : null
           )
         }
+        addImageUrlToBeDeleted={(imageUrl: string) => {}}
       />
     </div>
   );
