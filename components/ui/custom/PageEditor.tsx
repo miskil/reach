@@ -93,7 +93,7 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
             }
           }
         }
-      } else if (component.type === "Banner") {
+      } else if (component.type === "banner") {
         const images = component.widget as Image[];
         for (const image of images) {
           if (image.imageFile) {
