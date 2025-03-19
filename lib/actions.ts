@@ -291,6 +291,10 @@ export async function updatePage(id: string, content: any) {
 }
 
 export async function uploadImage(siteId: string, image: File | null) {
+  if (!image) return "";
+  return handleS3ImageUpload(image, siteId);
+
+  /** 
   let iconPath: string = "",
     filePath: string = "";
 
@@ -322,6 +326,7 @@ export async function uploadImage(siteId: string, image: File | null) {
     return "";
   }
   return iconPath;
+  */
 }
 
 const s3 = new S3Client({
@@ -443,7 +448,7 @@ export async function upsertSiteData(data: FormData) {
 
   if (siteIcon) {
     try {
-      siteIconPath = await uploadImage(siteId, siteIcon);
+      siteIconPath = (await uploadImage(siteId, siteIcon)) || "";
     } catch (error) {
       console.error("Image Upload Error:", error);
       return { error: "Failed to upload site icon" };
@@ -452,7 +457,7 @@ export async function upsertSiteData(data: FormData) {
 
   if (headerBkgImage) {
     try {
-      bkgImagePath = await uploadImage(siteId, headerBkgImage);
+      bkgImagePath = (await uploadImage(siteId, headerBkgImage)) || "";
     } catch (error) {
       console.error("Image Upload Error:", error);
       return { error: "Failed to upload site icon" };

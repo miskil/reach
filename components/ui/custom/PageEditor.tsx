@@ -144,7 +144,7 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
     <div className="p-4">
       <h1 className="text-2xl font-bold">{currentPage.name}</h1>
       {adminMode && (
-        <div className="flex items-center space-x-4 text-sm mb-4">
+        <div className="flex flex-wrap items-center space-x-4 sm:space-x-2 text-sm mb-4">
           <div>
             <label htmlFor="pageName" className="block mb-1">
               Page Name:
