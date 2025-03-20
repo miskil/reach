@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import PageRenderer from "./pagerenderer";
 import { upinsertPage } from "@/lib/actions";
 import { PageType, ContentType } from "@/lib/db/schema"; // Adjust the import path as necessary
-import { Tile, Image, TileWidget } from "@/lib/types"; // Adjust the import path as necessary
+import { Tile, Image, TileWidget, BannerWidget } from "@/lib/types"; // Adjust the import path as necessary
 import { useUser } from "@/lib/auth";
 import { handleS3ImageUpload, deleteS3Image } from "@/lib/actions";
 import { useRouter } from "next/navigation";
@@ -53,6 +53,95 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
       alert("Page saved!");
     }
   };
+  /*
+  const saveImages = async () => {
+    if (!currentPage) return;
+
+    // Ensure content is parsed correctly
+    let parsedContent: ContentType;
+    try {
+      parsedContent =
+        typeof currentPage.content === "string"
+          ? JSON.parse(currentPage.content)
+          : (currentPage.content as ContentType);
+    } catch (error) {
+      console.error("Failed to parse content:", error);
+      return;
+    }
+
+    if (!parsedContent || !Array.isArray(parsedContent.components)) return;
+
+    // Delete images from S3
+    for (const imageUrl of imagesToBeDeleted) {
+      await deleteS3Image(siteId, imageUrl);
+    }
+
+    // Ensure a new reference for updated components
+    const updatedComponents = parsedContent.components.map(
+      async (component) => {
+        if (component.type === "tilegrid") {
+          return {
+            ...component,
+            widget: {
+              ...component.widget,
+              Tile: component.widget.Tile.map(
+                async (tile: Tile): Promise<Tile> => {
+                  if (tile.imageFile) {
+                    const imageURL = await handleS3ImageUpload(
+                      tile.imageFile,
+                      siteId
+                    );
+                    return {
+                      ...tile,
+                      image: imageURL ?? "",
+                      imageFile: undefined,
+                    };
+                  }
+                  return tile;
+                }
+              ),
+            },
+          };
+        } else if (component.type === "banner") {
+          return {
+            ...component,
+            widget: await Promise.all(
+              (component.widget as Image[]).map(async (image) => {
+                if (image.imageFile) {
+                  const imageURL = await handleS3ImageUpload(
+                    image.imageFile,
+                    siteId
+                  );
+                  return { ...image, url: imageURL, imageFile: undefined };
+                }
+                return image;
+              })
+            ),
+          };
+        }
+        return component;
+      }
+    );
+
+    // Wait for all async operations to complete
+    const resolvedComponents = await Promise.all(updatedComponents);
+
+    // Update state while preserving other content properties
+    setCurrentPage((prevPage) =>
+      prevPage
+        ? {
+            ...prevPage,
+            content: JSON.stringify({
+              ...parsedContent, // Preserve original structure
+              components: resolvedComponents,
+            }),
+          }
+        : null
+    );
+
+    setImagesToBeDeleted([]); // Clear the list after saving
+  };
+  */
 
   const saveImages = async () => {
     if (!currentPage) return;
@@ -94,13 +183,12 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
           }
         }
       } else if (component.type === "banner") {
-        const images = component.widget as Image[];
-        for (const image of images) {
+        for (const image of component.widget.Image) {
           if (image.imageFile) {
             const imageURL = await handleS3ImageUpload(image.imageFile, siteId);
             if (imageURL) {
               image.url = imageURL;
-              delete image.imageFile;
+              delete image.imageFile; // Remove imageFile after upload
             }
           }
         }

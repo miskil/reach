@@ -35,3 +35,6 @@ export interface Image {
   url: string;
   imageFile?: File;
 }
+export interface BannerWidget {
+  images: Image[];
+}
