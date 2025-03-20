@@ -18,7 +18,7 @@ export default async function SlugLayout({ children }: LayoutProps) {
   const menus = await getMenuItems(siteId!);
 
   return (
-    <section className="flex flex-col min-h-screen">
+    <section className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
       <SiteHeader siteid={siteId!} HeaderUI={SiteHeaderUI} />
       <SiteMenus siteid={siteId!} menusdata={menus} />
 
