@@ -194,7 +194,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     <div>
       {Array.isArray(components) &&
         components.map((component, index) => (
-          <div key={component.id} className="relative mb-4">
+          <div key={component.id} className="pt-8 relative mb-4">
             {renderComponent(component, index)}
             {adminMode && (
               <button

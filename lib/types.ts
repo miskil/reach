@@ -24,7 +24,8 @@ export interface Tile {
   image: string;
   text: string;
   type: string;
-  more: string;
+  moreButtonText?: string;
+  moreUrl?: string;
   imageFile?: File;
 }
 export interface TileWidget {

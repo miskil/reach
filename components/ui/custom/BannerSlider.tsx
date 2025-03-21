@@ -72,7 +72,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
   };
 
   return (
-    <div className="relative w-full h-64 bg-gray-200">
+    <div className="relative w-full h-[400] bg-gray-200">
       {localImages.length > 0 && (
         <img
           src={localImages[currentIndex].url}

@@ -94,7 +94,6 @@ const TileGrid: React.FC<TileGridProps> = ({
       image: "",
       text: "",
       type: "",
-      more: "",
     };
     const updatedTiles = [...tiles, newTile];
     setTiles(updatedTiles);
@@ -107,7 +106,11 @@ const TileGrid: React.FC<TileGridProps> = ({
   };
   const handleLinkChange = (index: number, more: string) => {
     // Handle link change logic
-    const updatedTile: Tile = { ...tiles[index], more };
+    const updatedTile: Tile = { ...tiles[index], moreUrl: more };
+    handleTileUpdate(index, updatedTile);
+  };
+  const handleMoreButtonTextChange = (index: number, buttonText: string) => {
+    const updatedTile: Tile = { ...tiles[index], moreButtonText: buttonText };
     handleTileUpdate(index, updatedTile);
   };
   const tilesToDisplay =
@@ -134,11 +137,11 @@ const TileGrid: React.FC<TileGridProps> = ({
               </button>
             )}
             {tile.image ? (
-              <div className="relative">
+              <div className="flex-grow relative  w-full overflow-hidden h-80">
                 <img
                   src={tile.image}
                   alt={`Tile ${index}`}
-                  className="w-full h-full object-cover "
+                  className="object-cover  object-top h-full w-full block"
                 />
                 {/* Image Buttons */}
                 {adminMode && preview && (
@@ -174,13 +177,31 @@ const TileGrid: React.FC<TileGridProps> = ({
             )}
             {/* Image Buttons */}
             {adminMode && preview ? (
-              <div>
+              <div className="pt-2">
                 <textarea
                   value={tile.text}
                   onChange={(e) => handleTextChange(index, e.target.value)}
-                  className="w-full  border border-gray-300 rounded bg-white text-black "
+                  className="w-full  border border-gray-300 rounded bg-white text-black text-lg "
                 />
 
+                <div className="flex justify-between w-full items-center border-t pt-2">
+                  <input
+                    type="text"
+                    placeholder="more..."
+                    value={tile.moreButtonText || ""}
+                    onChange={(e) =>
+                      handleMoreButtonTextChange(index, e.target.value)
+                    }
+                    className="w-1/4 p-2 border border-gray-300 bg-white rounded mt-2"
+                  />
+                  <input
+                    type="text"
+                    placeholder="More Link"
+                    value={tile.moreUrl || ""}
+                    onChange={(e) => handleLinkChange(index, e.target.value)}
+                    className="w-full p-2 border border-gray-300 bg-white rounded mt-2"
+                  />
+                </div>
                 {/* Bottom Row */}
                 <div className="flex justify-between w-full items-center border-t pt-2">
                   <button className="p-2 text-black rounded">
@@ -198,14 +219,21 @@ const TileGrid: React.FC<TileGridProps> = ({
                     <option value="project">Project</option>
                     <option value="product">Product</option>
                   </select>
-
-                  {/* More Button with Modal */}
                 </div>
               </div>
             ) : (
-              <div>
-                <p>{tile.text}</p>
-                <div className="flex justify-between w-full items-center border-t pt-2">
+              <div className="pt-2">
+                <p className="text-lg">{tile.text}</p>
+                <div className="flex justify-center mt-2">
+                  {tile.moreUrl && (
+                    <Link href={tile.moreUrl}>
+                      <button className=" h-6 w-12 text-xs bg-blue-500 text-white rounded">
+                        {tile.moreButtonText || "more..."}
+                      </button>
+                    </Link>
+                  )}
+                </div>
+                <div className="flex justify-between w-full items-center  pt-2">
                   <Link
                     href={`/${siteId}/${pageName}/tile/${idxComponent}/${
                       idxTile !== undefined ? idxTile : index
