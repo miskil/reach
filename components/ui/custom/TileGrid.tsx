@@ -226,7 +226,11 @@ const TileGrid: React.FC<TileGridProps> = ({
                 <p className="text-lg">{tile.text}</p>
                 <div className="flex justify-center mt-2">
                   {tile.moreUrl && (
-                    <Link href={tile.moreUrl}>
+                    <Link
+                      href={tile.moreUrl}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
                       <button className=" h-6 w-12 text-xs bg-blue-500 text-white rounded">
                         {tile.moreButtonText || "more..."}
                       </button>
