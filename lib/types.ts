@@ -27,6 +27,8 @@ export interface Tile {
   moreButtonText?: string;
   moreUrl?: string;
   imageFile?: File;
+  Title?: string;
+  TileURL?: string;
 }
 export interface TileWidget {
   Tile: Tile[];

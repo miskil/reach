@@ -55,6 +55,10 @@ const TileGrid: React.FC<TileGridProps> = ({
     const updatedTile: Tile = { ...tiles[index], text };
     handleTileUpdate(index, updatedTile);
   };
+  const handleTitleChange = (index: number, text: string) => {
+    const updatedTile: Tile = { ...tiles[index], Title: text };
+    handleTileUpdate(index, updatedTile);
+  };
 
   const handleDeleteTile = (index: number) => {
     if (tiles[index].image) {
@@ -135,6 +139,20 @@ const TileGrid: React.FC<TileGridProps> = ({
               >
                 <X />
               </button>
+            )}
+            {tile.Title && (
+              <h2 className="text-2xl font-bold  bg-blue-300 w-full text-white p-2 text-center">
+                {tile.Title}
+              </h2>
+            )}
+            {adminMode && preview && (
+              <input
+                type="text"
+                placeholder="Enter title"
+                value={tile.Title || ""}
+                onChange={(e) => handleTitleChange(index, e.target.value)}
+                className="w-full p-2 border border-gray-300 bg-white rounded mt-2"
+              />
             )}
             {tile.image ? (
               <div className="flex-grow relative  w-full overflow-hidden h-80">
