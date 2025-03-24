@@ -17,7 +17,7 @@ interface PageEditorProps {
 
 const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
   const [currentPage, setCurrentPage] = useState<PageType | null>(page);
-  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const { modifyMode } = useUser();
   const [preview, setPreview] = useState(false);
   const [imagesToBeDeleted, setImagesToBeDeleted] = useState<string[]>([]);
 
@@ -229,10 +229,10 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
   if (!currentPage) return <p>Loading...</p>;
 
   return (
-    <div className="p-4">
+    <div className="p-4 ">
       <h1 className="text-2xl font-bold">{currentPage.name}</h1>
-      {adminMode && (
-        <div className="flex flex-wrap items-center space-x-4 sm:space-x-2 text-sm mb-4">
+      {modifyMode && (
+        <div className=" flex flex-wrap items-center space-x-4 sm:space-x-2 text-sm mb-4">
           <div>
             <label htmlFor="pageName" className="block mb-1">
               Page Name:
@@ -246,7 +246,6 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
               className="p-1 border border-gray-300 rounded bg-white text-black"
             />
           </div>
-
           <div>
             <label htmlFor="menuItem" className="block mb-1">
               Menu Item (Optional):
@@ -260,36 +259,32 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
               className="p-1 border border-gray-300 rounded bg-white text-black"
             />
           </div>
-
           <div>
-            <button
-              onClick={() => setPreview(!preview)}
-              className="bg-yellow-500 text-white px-4 py-2 rounded mt-4"
-            >
-              {preview ? "Preview" : "Modify"}
-            </button>
-            <button
-              onClick={handleSave}
-              className="bg-blue-500 text-white px-4 py-2 rounded ml-4"
-            >
-              Save Page
-            </button>
+            {isDirty && (
+              <button
+                onClick={handleSave}
+                className="bg-blue-500 text-white px-4 py-2 rounded ml-4"
+              >
+                Save Page
+              </button>
+            )}
           </div>
         </div>
       )}
-
-      <PageRenderer
-        siteId={siteId}
-        content={(currentPage.content as ContentType) || []}
-        preview={preview}
-        onUpdate={(updatedContent) => {
-          setCurrentPage((prevPage: PageType | null) =>
-            prevPage ? { ...prevPage, content: updatedContent } : null
-          );
-          setIsDirty(true);
-        }}
-        addImageUrlToBeDeleted={addImageUrlToBeDeleted}
-      />
+      <main className="flex-grow p-4 bg-white">
+        <PageRenderer
+          siteId={siteId}
+          content={(currentPage.content as ContentType) || []}
+          preview={preview}
+          onUpdate={(updatedContent) => {
+            setCurrentPage((prevPage: PageType | null) =>
+              prevPage ? { ...prevPage, content: updatedContent } : null
+            );
+            setIsDirty(true);
+          }}
+          addImageUrlToBeDeleted={addImageUrlToBeDeleted}
+        />
+      </main>
     </div>
   );
 };

@@ -26,7 +26,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
 }) => {
   const [localImages, setLocalImages] = useState<Image[]>(initialImages);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const { modifyMode } = useUser();
 
   const handleImageUpload = async (file: File) => {
     const imageURL = URL.createObjectURL(file);
@@ -96,7 +96,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
           <ChevronRight />
         </button>
       </div>
-      {adminMode && preview && (
+      {modifyMode && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex  items-center space-x-2">
           <ButtonUpload
             ButtonComponent={ImageIcon}

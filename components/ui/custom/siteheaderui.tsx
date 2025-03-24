@@ -9,18 +9,12 @@ import Image from "next/image";
 import clsx from "clsx";
 import JoditEditor from "jodit-react";
 import { upsertSiteData } from "@/lib/actions";
+import ModifyBar from "@/components/ui/custom/ModifyBar";
 
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
 
-import { MousePointerClick, CircleIcon, Home, LogOut } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/lib/auth";
 import {
   signOut,
@@ -38,20 +32,20 @@ type SiteHeaderProps = {
 
 export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { user, setUser, modifyMode, setModifyMode, adminMode, setAdminMode } =
+    useUser();
+  if (user) {
+    setAdminMode(true);
+  }
+
   console.log("user in SiteHeaderUI", user);
   const [preview, setpreview] = useState(false);
 
   const close = () => setIsMenuOpen(false);
 
   const [loading, setLoading] = useState(false);
-
-  const router = useRouter();
-
-  const adminPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
-  const ManagePagePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
-  const ManageCoursePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managecourse`;
-  const Base = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}`;
 
   const editor = useRef(null);
   const [content, setContent] = useState<string>(headerdata?.siteHeader || "");
@@ -60,6 +54,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   );
   const [newIconFile, setNewIconFile] = useState<File | null>(null);
   const [newBgImageFile, setNewBgImageFile] = useState<File | null>(null);
+  const Base = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}`;
 
   useEffect(() => {
     setContent(headerdata?.siteHeader!);
@@ -72,7 +67,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
       //  if you don't use it the editor will lose focus every time when you make any change to the editor, even an addition of one character
       /* Custom image uploader button configuretion to accept image and convert it to base64 format */
 
-      readonly: !preview,
+      readonly: !modifyMode,
       placeholder: "Type here...",
       toolbarAdaptive: false,
       removeButtons: [
@@ -111,11 +106,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
     [preview]
   );
 
-  async function handleSignOut() {
-    setUser(null);
-    await signOut();
-    router.push("/");
-  }
+  useUnsavedChanges(isDirty);
   async function handleSave() {
     const formData = new FormData();
     formData.append("siteId", siteid);
@@ -129,37 +120,27 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
     formData.append("existingbgImageURL", "");
 
     await upsertSiteData(formData);
+    setIsDirty(false);
 
     alert("header saved!");
   }
   const handleUpdate = (newContent: string) => {
     setContent(newContent);
+    setIsDirty(true);
     //onUpdate(newContent);
   };
-  const handleAdminClick = () => {
-    setAdminMode(!adminMode);
-    router.refresh;
-    router.push(adminPath);
-  };
-  const handleManagePageClick = () => {
-    setAdminMode(!adminMode);
-    router.refresh;
-    router.push(ManagePagePath);
-  };
-  const handleManageCourseClick = () => {
-    setAdminMode(!adminMode);
-    router.refresh;
-    router.push(ManageCoursePath);
-  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setNewIconFile(file);
       setSiteIcon(URL.createObjectURL(file)); // Show a preview of the uploaded image
+      setIsDirty(true);
     }
   };
   return (
     <header className="border-b border-gray-200">
+      {user && <ModifyBar />}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <div className="relative">
@@ -173,7 +154,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
                 unoptimized={true}
               />
             </Link>
-            {preview && (
+            {modifyMode && (
               <input
                 type="file"
                 accept="image/*"
@@ -185,7 +166,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
           </div>
 
           <div>
-            {preview ? (
+            {modifyMode ? (
               <JoditEditor
                 ref={editor}
                 value={content}
@@ -199,16 +180,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
           </div>
 
           <div>
-            {adminMode && (
-              <button
-                onClick={() => setpreview(!preview)}
-                className="bg-yellow-500 text-white px-4 py-2 rounded mt-4"
-              >
-                {preview ? "Preview" : "Modify"}
-              </button>
-            )}
-
-            {preview && (
+            {isDirty && modifyMode && (
               <button
                 onClick={handleSave}
                 className="bg-blue-500 text-white px-4 py-2 rounded ml-4"
@@ -217,63 +189,6 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
               </button>
             )}
           </div>
-        </div>
-        <div className="flex items-center space-x-4  ">
-          {user && (
-            <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer size-9 pr-30">
-                  <AvatarImage alt={user.name || ""} />
-                  <AvatarFallback>
-                    {user.email
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="flex flex-col gap-1">
-                <DropdownMenuItem
-                  className={`cursor-pointer
-                  ${adminMode ? "font-bold" : ""}`}
-                  onClick={handleAdminClick}
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  <span>Admin</span>
-                  {/*
-                  <Link href={adminPath} className="flex w-full items-center">
-                    <Home className="mr-2 h-4 w-4" />
-                    <span>Admin</span>
-                  </Link>
-                  */}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className={`cursor-pointer
-                  ${adminMode ? "font-bold" : ""}`}
-                  onClick={handleManagePageClick}
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  <span>Manage Page</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className={`cursor-pointer
-                  ${adminMode ? "font-bold" : ""}`}
-                  onClick={handleManageCourseClick}
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  <span>Manage Course</span>
-                </DropdownMenuItem>
-                <form action={handleSignOut} className="w-full">
-                  <button type="submit" className="flex w-full">
-                    <DropdownMenuItem className="w-full flex-1 cursor-pointer">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Sign out</span>
-                    </DropdownMenuItem>
-                  </button>
-                </form>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
       </div>
     </header>

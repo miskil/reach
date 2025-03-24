@@ -41,7 +41,7 @@ const TileGrid: React.FC<TileGridProps> = ({
 }) => {
   const [tiles, setTiles] = useState<Tile[]>(initialTiles);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const { modifyMode } = useUser();
 
   const handleTileUpdate = (index: number, updatedTile: Tile) => {
     const updatedTiles = tiles.map((tile, i) =>
@@ -123,7 +123,11 @@ const TileGrid: React.FC<TileGridProps> = ({
       : tiles;
 
   return (
-    <div className="text-sm">
+    <div
+      className={`text-sm ${
+        modifyMode ? "border border-gray-300 border-dashed" : ""
+      } rounded`}
+    >
       {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -132,7 +136,7 @@ const TileGrid: React.FC<TileGridProps> = ({
             key={tile.id}
             className="flex flex-col items-center w-full max-w-lg mx-auto  justify-end pb-4 shadow-lg bg-white relative"
           >
-            {adminMode && preview && (
+            {modifyMode && (
               <button
                 className="absolute top-0 right-0 p-2  text-black rounded z-10"
                 onClick={() => handleDeleteTile(index)}
@@ -145,7 +149,7 @@ const TileGrid: React.FC<TileGridProps> = ({
                 {tile.Title}
               </h2>
             )}
-            {adminMode && preview && (
+            {modifyMode && (
               <input
                 type="text"
                 placeholder="Enter title"
@@ -159,10 +163,10 @@ const TileGrid: React.FC<TileGridProps> = ({
                 <img
                   src={tile.image}
                   alt={`Tile ${index}`}
-                  className="object-cover  object-top h-full w-full block"
+                  className="object-cover object-top min-w-full h-full w-full block"
                 />
                 {/* Image Buttons */}
-                {adminMode && preview && (
+                {modifyMode && (
                   <div className="absolute bottom-0  left-1/2 transform -translate-x-1/2 w-2/3 flex justify-center gap-1 mb-1  rounded bg-white/50 text-black rounded-3xl">
                     <ButtonUpload
                       ButtonComponent={ImageIcon}
@@ -183,7 +187,7 @@ const TileGrid: React.FC<TileGridProps> = ({
               </div>
             ) : (
               <div>
-                {adminMode && preview && (
+                {modifyMode && (
                   <div className="relative">
                     <ButtonUpload
                       ButtonComponent={ImageIcon}
@@ -194,7 +198,7 @@ const TileGrid: React.FC<TileGridProps> = ({
               </div>
             )}
             {/* Image Buttons */}
-            {adminMode && preview ? (
+            {modifyMode ? (
               <div className="pt-2">
                 <textarea
                   value={tile.text}
@@ -285,7 +289,7 @@ const TileGrid: React.FC<TileGridProps> = ({
             {/* Image */}
           </div>
         ))}
-        {adminMode && preview && (
+        {modifyMode && (
           <div className="p-4 border border-gray-300 rounded flex items-center justify-center h-48">
             <button
               onClick={handleAddTile}
@@ -299,128 +303,5 @@ const TileGrid: React.FC<TileGridProps> = ({
     </div>
   );
 };
-
-{
-  /** 
-          <div
-            key={tile.id}
-            className="p-0 border border-gray-300 rounded-3xl relative group"
-          >
-            <div className="mb-4">
-              {tile.image && (
-                <div className="relative">
-                  <img
-                    src={tile.image}
-                    alt={`Tile ${index}`}
-                    className="w-full h-auto rounded-3xl"
-                  />
-                </div>
-              )}
-              {adminMode && preview && (
-                <div className="absolute top-0 left-0 right-0 flex items-center justify-start mt-2 hidden group-hover:flex">
-                  {/* Upload Button 
-                  <div className="pr-2 relative group">
-                    <ButtonUpload
-                      ButtonComponent={ImageIcon}
-                      onFileUpload={(file) => handleImageUpload(file, index)}
-                    />
-                    {/** 
-                    <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100">
-                      Upload Image
-                    </span>
-                    
-                  </div>
-
-                  {/* Delete Button 
-                  <div className="relative group">
-                    <button
-                      className="text-black-500"
-                      onClick={() => handleDeleteTile(index)}
-                    >
-                      <div className="bg-gray-200 rounded-full p-2">
-                        <Trash2 />
-                      </div>
-                    </button>
-                    {/** 
-                    <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100">
-                      Delete Tile
-                    </span>
-                    *
-                  </div>
-                  <div className="relative group ml-auto">
-                    <select
-                      className="bg-white border border-gray-300 rounded p-2 text-xs"
-                      value={tile.type || "info"}
-                      onChange={(e) => handleTypeChange(index, e.target.value)}
-                    >
-                      <option value="">Type</option>
-                      <option value="event">Event</option>
-                      <option value="info">Info</option>
-                      <option value="project">Project</option>
-                      <option value="product">Product</option>
-                    </select>
-                    {/*
-                    <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 text-xs text-white bg-gray-700 rounded opacity-0 group-hover:opacity-100">
-                      Select Category
-                    </span>
-                    *
-                  </div>
-                </div>
-              )}
-            </div>
-            {adminMode && preview ? (
-              <textarea
-                value={tile.text}
-                onChange={(e) => handleTextChange(index, e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded bg-white text-black rounded-3xl"
-              />
-            ) : (
-              <p>{tile.text}</p>
-            )}
-            <div className="flex justify-between mt-2">
-              <Link
-                href={`/${siteId}/${pageName}/tile/${idxComponent}/${
-                  idxTile !== undefined ? idxTile : index
-                }`}
-              >
-                <button className="p-2 text-black rounded">
-                  <Share />
-                </button>
-              </Link>
-              {!adminMode && preview && tile.type === "product" && (
-                <button className="p-2 bg-green-500 text-white rounded">
-                  <ScanBarcode />
-                </button>
-              )}
-              {!adminMode && preview && tile.type === "project" && (
-                <button className="p-2 bg-red-500 text-white rounded">
-                  <HeartHandshake />
-                </button>
-              )}
-            </div>
-
-            <div className="flex justify-center mt-2">
-              <Link href={tile.more || "#"}>
-                <button className="p-2 bg-blue-500 text-white rounded">
-                  More
-                </button>
-              </Link>
-            </div>
-            {adminMode && preview && (
-              <div className="mt-2">
-                <input
-                  type="text"
-                  placeholder="Enter link"
-                  value={tile.more || ""}
-                  onChange={(e) => handleLinkChange(index, e.target.value)}
-                  className="w-full p-2 border bg-white text-xm border-gray-300 rounded"
-                />
-              </div>
-            )}
-          </div>
-  
-  
-  */
-}
 
 export default TileGrid;

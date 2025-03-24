@@ -38,7 +38,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   useEffect(() => {
     setComponents(content.components || []);
   }, [content]);
-  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const { modifyMode } = useUser();
 
   // Function to define the initial structure for widgets
   const initialWidgetByType = (type: string) => {
@@ -196,34 +196,34 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         components.map((component, index) => (
           <div key={component.id} className="pt-8 relative mb-4">
             {renderComponent(component, index)}
-            {adminMode && (
-              <button
-                onClick={() => deleteComponent(component.id)}
-                className="absolute top-0 right-0 p-2 bg-red-500 text-white rounded"
-              >
-                Delete
-              </button>
+            {modifyMode && (
+              <div>
+                <button
+                  onClick={() => deleteComponent(component.id)}
+                  className="absolute top-0 right-0 p-2 bg-red-500 text-white rounded"
+                >
+                  Delete
+                </button>
+                <div className="mt-4">
+                  <select
+                    onChange={(e) => addComponent(e.target.value)}
+                    className="p-2 border border-gray-300 bg-white text-black rounded"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Add Component
+                    </option>
+                    <option value="banner">Banner</option>
+                    <option value="sectionheader">Section Header</option>
+                    <option value="tilegrid">Tile Grid</option>
+                    <option value="texteditor">Text Editor</option>
+                    <option value="CourseIndexComponents">Course Index</option>
+                  </select>
+                </div>
+              </div>
             )}
           </div>
         ))}
-      {adminMode && preview && (
-        <div className="mt-4">
-          <select
-            onChange={(e) => addComponent(e.target.value)}
-            className="p-2 border border-gray-300 bg-white text-black rounded"
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Add Component
-            </option>
-            <option value="banner">Banner</option>
-            <option value="sectionheader">Section Header</option>
-            <option value="tilegrid">Tile Grid</option>
-            <option value="texteditor">Text Editor</option>
-            <option value="CourseIndexComponents">Course Index</option>
-          </select>
-        </div>
-      )}
     </div>
   );
 };

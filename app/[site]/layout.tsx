@@ -21,7 +21,6 @@ export default async function SlugLayout({ children }: LayoutProps) {
     <section className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
       <SiteHeader siteid={siteId!} HeaderUI={SiteHeaderUI} />
       <SiteMenus siteid={siteId!} menusdata={menus} />
-
       {/*<Header />*/}
       {children}
     </section>

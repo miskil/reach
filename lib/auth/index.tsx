@@ -15,6 +15,8 @@ type UserContextType = {
   setUser: (user: User | null) => void;
   adminMode: boolean;
   setAdminMode: (mode: boolean) => void;
+  modifyMode?: boolean;
+  setModifyMode?: (mode: boolean) => void;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -37,13 +39,30 @@ export function UserProvider({
   let initialUser = use(userPromise);
   let [user, setUser] = useState<User | null>(initialUser);
   const [adminMode, setAdminMode] = useState<boolean>(false);
-
+  const [modifyMode, setModifyMode] = useState<boolean>(false);
   useEffect(() => {
     setUser(initialUser);
   }, [initialUser]);
+  // Ensure modifyMode can only be true if adminMode is true
+  const handleSetModifyMode = (mode: boolean) => {
+    if (adminMode) {
+      setModifyMode(mode);
+    } else {
+      setModifyMode(false); // Reset if adminMode is false
+    }
+  };
 
   return (
-    <UserContext.Provider value={{ user, setUser, adminMode, setAdminMode }}>
+    <UserContext.Provider
+      value={{
+        user,
+        setUser,
+        adminMode,
+        setAdminMode,
+        modifyMode,
+        setModifyMode: handleSetModifyMode,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
