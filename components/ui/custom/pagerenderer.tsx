@@ -70,6 +70,20 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     setComponents(newComponents);
     if (onUpdate) onUpdate({ components: newComponents });
   };
+  const insertComponent = (type: string, index: number) => {
+    const newComponent = {
+      id: Date.now().toString(),
+      type,
+      widget: initialWidgetByType(type), // Assign initial structure
+    };
+    const newComponents = [
+      ...components.slice(0, index), // Components before the insertion point
+      newComponent, // New component to insert
+      ...components.slice(index), // Components after the insertion point
+    ];
+    setComponents(newComponents);
+    if (onUpdate) onUpdate({ components: newComponents });
+  };
 
   const deleteComponent = (id: string) => {
     const componentToDelete = components.find(
@@ -192,6 +206,24 @@ const PageRenderer: React.FC<PageRendererProps> = ({
 
   return (
     <div>
+      {modifyMode && (
+        <div className="mt-4">
+          <select
+            onChange={(e) => insertComponent(e.target.value, 0)}
+            className="p-2 border border-gray-300 bg-white text-black rounded"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Add Component
+            </option>
+            <option value="banner">Banner</option>
+            <option value="sectionheader">Section Header</option>
+            <option value="tilegrid">Tile Grid</option>
+            <option value="texteditor">Text Editor</option>
+            <option value="CourseIndexComponents">Course Index</option>
+          </select>
+        </div>
+      )}
       {Array.isArray(components) &&
         components.map((component, index) => (
           <div key={component.id} className="pt-8 relative mb-4">
@@ -206,7 +238,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
                 </button>
                 <div className="mt-4">
                   <select
-                    onChange={(e) => addComponent(e.target.value)}
+                    onChange={(e) => insertComponent(e.target.value, index + 1)}
                     className="p-2 border border-gray-300 bg-white text-black rounded"
                     defaultValue=""
                   >
