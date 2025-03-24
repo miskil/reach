@@ -103,7 +103,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
         imagesExtensions: ["jpg", "png", "jpeg", "gif", "svg", "webp"], // this line is not much important , use if you only strictly want to allow some specific image format
       },
     }),
-    [preview]
+    [modifyMode]
   );
 
   useUnsavedChanges(isDirty);

@@ -18,7 +18,8 @@ const TextEditor: React.FC<TextEditorProps> = ({
 }) => {
   const editor = useRef(null);
   const [content, setContent] = useState<string>(initialContent);
-  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const { modifyMode } = useUser();
+  console.log("modifyMode in TextEditor", modifyMode);
 
   useEffect(() => {
     setContent(initialContent);
@@ -30,7 +31,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
       //  if you don't use it the editor will lose focus every time when you make any change to the editor, even an addition of one character
       /* Custom image uploader button configuretion to accept image and convert it to base64 format */
 
-      readonly: !adminMode && preview,
+      readonly: !modifyMode,
       placeholder: "Type here...",
 
       uploader: {
@@ -38,7 +39,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
         imagesExtensions: ["jpg", "png", "jpeg", "gif", "svg", "webp"], // this line is not much important , use if you only strictly want to allow some specific image format
       },
     }),
-    []
+    [modifyMode]
   );
 
   const handleUpdate = (newContent: string) => {
@@ -49,7 +50,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   return (
     // Adjust the styles as necessary
     <div>
-      {adminMode && preview ? (
+      {modifyMode ? (
         <JoditEditor
           ref={editor}
           value={content}
