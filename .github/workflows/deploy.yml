@@ -28,7 +28,7 @@ jobs:
             git pull origin main  # Pull latest code
             npm install  # Install dependencies
             npm run build  # Build Next.js app
-            pm2 restart your-app-name  # Restart the app
+            pm2 restart reach  # Restart the app
           EOF
         env:
           AWS_USER: ${{ secrets.AWS_USER }}
