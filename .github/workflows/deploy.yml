@@ -17,6 +17,9 @@ jobs:
         run: |
           echo "${{ secrets.AWS_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
+          ssh-keygen -y -f private_key.pem > /dev/null  # Verify the key is valid
+        env:
+          AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
 
       - name: Deploy Code to AWS
         run: |
@@ -25,5 +28,8 @@ jobs:
             git pull origin main  # Pull latest code
             npm install  # Install dependencies
             npm run build  # Build Next.js app
-            pm2 restart your-app-name  # Restart the app
+            pm2 restart reach  # Restart the app
           EOF
+        env:
+          AWS_USER: ${{ secrets.AWS_USER }}
+          AWS_HOST: ${{ secrets.AWS_HOST }}
