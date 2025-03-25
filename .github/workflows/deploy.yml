@@ -1,0 +1,29 @@
+name: Deploy Next.js to AWS
+
+on:
+  push:
+    branches:
+      - main  # Runs when code is pushed to 'main'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # GitHub Actions runner
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3  # Gets the latest code
+
+      - name: Set up SSH Key
+        run: |
+          echo "${{ secrets.AWS_SSH_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: Deploy Code to AWS
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} << 'EOF'
+            cd reach  # Change to your project directory
+            git pull origin main  # Pull latest code
+            npm install  # Install dependencies
+            npm run build  # Build Next.js app
+            pm2 restart your-app-name  # Restart the app
+          EOF
