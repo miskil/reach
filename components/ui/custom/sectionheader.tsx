@@ -4,22 +4,28 @@ import { useUser } from "@/lib/auth";
 interface SectionHeaderProps {
   preview: boolean;
   initialBackgroundColor?: string;
+  initialTextColor?: string;
   initialHeaderText?: string;
   onBackgroundColorChange?: (color: string) => void;
+  onTextColorChange?: (color: string) => void;
   onHeaderTextChange?: (text: string) => void;
 }
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({
   preview,
   initialBackgroundColor = "#ffffff",
+  initialTextColor = "#ffffff",
   initialHeaderText = "Section Header",
   onBackgroundColorChange,
+  onTextColorChange,
   onHeaderTextChange,
 }) => {
   const [backgroundColor, setBackgroundColor] = useState(
     initialBackgroundColor
   );
+  const [textColor, setTextColor] = useState(initialTextColor);
   const [headerText, setHeaderText] = useState(initialHeaderText);
+  const [isDirty, setIsDirty] = useState(false);
   const { modifyMode } = useUser();
 
   const handleBackgroundColorChange = (
@@ -29,6 +35,14 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
     setBackgroundColor(color);
     if (onBackgroundColorChange) {
       onBackgroundColorChange(color);
+    }
+  };
+
+  const handleTextColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const color = e.target.value;
+    setTextColor(color); // Update the text color state
+    if (onTextColorChange) {
+      onTextColorChange(color); // Call the callback if provided
     }
   };
 
@@ -51,6 +65,12 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
             className="mb-2"
           />
           <input
+            type="color"
+            value={textColor}
+            onChange={handleTextColorChange}
+            className="mb-2"
+          />
+          <input
             type="text"
             value={headerText}
             onChange={handleHeaderTextChange}
@@ -60,7 +80,9 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
         </div>
       ) : (
         <div className="p-4">
-          <h1 className="text-2xl font-bold">{headerText}</h1>
+          <h1 className="text-2xl font-bold" style={{ color: textColor }}>
+            {headerText}
+          </h1>
         </div>
       )}
     </div>

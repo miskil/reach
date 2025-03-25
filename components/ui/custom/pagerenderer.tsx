@@ -51,6 +51,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         return {
           backgroundColor: "#ffffff",
           headerText: "Section Header",
+          textColor: "#000000",
         }; // Default styles and text
       case "tilegrid":
         return { Tile: [] }; // Empty tiles array
@@ -157,6 +158,12 @@ const PageRenderer: React.FC<PageRendererProps> = ({
               updateComponentWidget(component.id, {
                 ...component.widget,
                 backgroundColor: color,
+              })
+            }
+            onTextColorChange={(color) =>
+              updateComponentWidget(component.id, {
+                ...component.widget,
+                textColor: color,
               })
             }
             onHeaderTextChange={(text) =>
