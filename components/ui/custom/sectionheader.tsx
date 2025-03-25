@@ -20,7 +20,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
     initialBackgroundColor
   );
   const [headerText, setHeaderText] = useState(initialHeaderText);
-  const { user, setUser, adminMode, setAdminMode } = useUser();
+  const { modifyMode } = useUser();
 
   const handleBackgroundColorChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -42,7 +42,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
 
   return (
     <div className="w-full" style={{ backgroundColor }}>
-      {adminMode && preview ? (
+      {modifyMode ? (
         <div className="p-4">
           <input
             type="color"

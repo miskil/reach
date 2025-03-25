@@ -7,9 +7,11 @@ import Link from "next/link";
 import {
   Image as ImageIcon,
   Trash2,
+  SquarePlus,
+  ImageUp,
   HeartHandshake,
   ScanBarcode,
-  Share,
+  ExternalLink as Share,
   X,
 } from "lucide-react"; // Adjust the import path as necessary
 
@@ -125,7 +127,7 @@ const TileGrid: React.FC<TileGridProps> = ({
   return (
     <div
       className={`text-sm ${
-        modifyMode ? "border border-gray-300 border-dashed" : ""
+        modifyMode ? "border border-gray-300 border-dashed p-4" : ""
       } rounded`}
     >
       {errorMessage && <p className="text-red-500">{errorMessage}</p>}
@@ -169,7 +171,7 @@ const TileGrid: React.FC<TileGridProps> = ({
                 {modifyMode && (
                   <div className="absolute bottom-0  left-1/2 transform -translate-x-1/2 w-2/3 flex justify-center gap-1 mb-1  rounded bg-white/50 text-black rounded-3xl">
                     <ButtonUpload
-                      ButtonComponent={ImageIcon}
+                      ButtonComponent={ImageUp}
                       onFileUpload={(file) => handleImageUpload(file, index)}
                     />
                     <div>
@@ -178,7 +180,7 @@ const TileGrid: React.FC<TileGridProps> = ({
                         onClick={() => handleDeleteTileImage(index)}
                       >
                         <div className="bg-transparent text-grey px-2 py-1">
-                          <Trash2 />
+                          <X />
                         </div>
                       </button>
                     </div>
@@ -190,7 +192,7 @@ const TileGrid: React.FC<TileGridProps> = ({
                 {modifyMode && (
                   <div className="relative">
                     <ButtonUpload
-                      ButtonComponent={ImageIcon}
+                      ButtonComponent={ImageUp}
                       onFileUpload={(file) => handleImageUpload(file, index)}
                     />
                   </div>
@@ -291,11 +293,8 @@ const TileGrid: React.FC<TileGridProps> = ({
         ))}
         {modifyMode && (
           <div className="p-4 border border-gray-300 rounded flex items-center justify-center h-48">
-            <button
-              onClick={handleAddTile}
-              className="p-2 bg-blue-500 text-white rounded"
-            >
-              Add Tile
+            <button onClick={handleAddTile} className="p-2  rounded">
+              <SquarePlus className="h-12 w-12" />
             </button>
           </div>
         )}

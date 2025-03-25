@@ -5,6 +5,8 @@ import BannerSlider from "./BannerSlider";
 import TextEditor from "./TextEditor";
 import { useUser } from "@/lib/auth";
 import { Tile, Image, TileWidget } from "@/lib/types"; // Adjust the import path as necessary
+import AddComponent from "./AddComponent";
+import { SquareX } from "lucide-react"; // Adjust the import path as necessary
 
 interface PageRendererProps {
   siteId: string;
@@ -208,20 +210,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     <div>
       {modifyMode && (
         <div className="mt-4">
-          <select
-            onChange={(e) => insertComponent(e.target.value, 0)}
-            className="p-2 border border-gray-300 bg-white text-black rounded"
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Add Component
-            </option>
-            <option value="banner">Banner</option>
-            <option value="sectionheader">Section Header</option>
-            <option value="tilegrid">Tile Grid</option>
-            <option value="texteditor">Text Editor</option>
-            <option value="CourseIndexComponents">Course Index</option>
-          </select>
+          <AddComponent index={0} onAddComponent={insertComponent} />
         </div>
       )}
       {Array.isArray(components) &&
@@ -232,25 +221,15 @@ const PageRenderer: React.FC<PageRendererProps> = ({
               <div>
                 <button
                   onClick={() => deleteComponent(component.id)}
-                  className="absolute top-0 right-0 p-2 bg-red-500 text-white rounded"
+                  className="absolute top-0 right-0 p-2  rounded"
                 >
-                  Delete
+                  <SquareX />
                 </button>
                 <div className="mt-4">
-                  <select
-                    onChange={(e) => insertComponent(e.target.value, index + 1)}
-                    className="p-2 border border-gray-300 bg-white text-black rounded"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Add Component
-                    </option>
-                    <option value="banner">Banner</option>
-                    <option value="sectionheader">Section Header</option>
-                    <option value="tilegrid">Tile Grid</option>
-                    <option value="texteditor">Text Editor</option>
-                    <option value="CourseIndexComponents">Course Index</option>
-                  </select>
+                  <AddComponent
+                    index={index + 1}
+                    onAddComponent={insertComponent}
+                  />
                 </div>
               </div>
             )}
