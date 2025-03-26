@@ -4,7 +4,12 @@ import TileGrid from "./TileGrid";
 import BannerSlider from "./BannerSlider";
 import TextEditor from "./TextEditor";
 import { useUser } from "@/lib/auth";
-import { Tile, Image, TileWidget } from "@/lib/types"; // Adjust the import path as necessary
+import {
+  Tile,
+  Image,
+  SectionHeader as SectionHeaderType,
+  TileWidget,
+} from "@/lib/types"; // Adjust the import path as necessary
 import AddComponent from "./AddComponent";
 import { SquareX } from "lucide-react"; // Adjust the import path as necessary
 
@@ -49,9 +54,11 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         return { Image: [] }; // Initialize with an empty images array
       case "sectionheader":
         return {
-          backgroundColor: "#ffffff",
-          headerText: "Section Header",
-          textColor: "#000000",
+          SectionHeader: {
+            backgroundColor: "#ffffff",
+            textColor: "#000000",
+            headerText: "Section Header",
+          },
         }; // Default styles and text
       case "tilegrid":
         return { Tile: [] }; // Empty tiles array
@@ -151,25 +158,13 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         return (
           <SectionHeader
             key={component.id}
-            preview={preview}
             initialBackgroundColor={component.widget.backgroundColor}
             initialHeaderText={component.widget.headerText}
-            onBackgroundColorChange={(color) =>
+            initialTextColor={component.widget.textColor}
+            onSectionHeaderChange={(sectionHeader) =>
               updateComponentWidget(component.id, {
                 ...component.widget,
-                backgroundColor: color,
-              })
-            }
-            onTextColorChange={(color) =>
-              updateComponentWidget(component.id, {
-                ...component.widget,
-                textColor: color,
-              })
-            }
-            onHeaderTextChange={(text) =>
-              updateComponentWidget(component.id, {
-                ...component.widget,
-                headerText: text,
+                ...sectionHeader, // Update the SectionHeader properties
               })
             }
           />

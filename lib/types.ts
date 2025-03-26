@@ -41,3 +41,9 @@ export interface Image {
 export interface BannerWidget {
   images: Image[];
 }
+export interface SectionHeader {
+  id?: number;
+  backgroundColor: string;
+  textColor: string;
+  headerText: string;
+}
