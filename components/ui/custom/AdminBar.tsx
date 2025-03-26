@@ -19,10 +19,11 @@ import {
   getSiteHeaderElements,
 } from "@/lib/actions";
 
-const ModifyBar: React.FC = () => {
+const AdminBar: React.FC = () => {
   const { user, setUser, modifyMode, setModifyMode, adminMode, setAdminMode } =
     useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showModifySwitch, setShowModifySwitch] = useState(false);
   const router = useRouter();
 
   const pathname = usePathname();
@@ -40,6 +41,7 @@ const ModifyBar: React.FC = () => {
   };
   const handleManagePageClick = () => {
     setAdminMode(!adminMode);
+    setShowModifySwitch(true);
     router.refresh;
     router.push(ManagePagePath);
   };
@@ -56,15 +58,19 @@ const ModifyBar: React.FC = () => {
 
   return (
     <div className=" w-full bg-black text-white p-4 flex justify-end items-center space-x-4">
-      <span className="text-sm font-semibold">Modify</span>
+      {showModifySwitch && (
+        <div className="flex items-center space-x-4">
+          <span className="text-sm font-semibold">Modify</span>
 
-      <Switch.Root
-        className="w-12 h-6 bg-gray-400 rounded-full relative data-[state=checked]:bg-green-500 transition"
-        checked={modifyMode}
-        onCheckedChange={setModifyMode}
-      >
-        <Switch.Thumb className="block w-5 h-5 bg-white rounded-full shadow-md transition-transform translate-x-0 data-[state=checked]:translate-x-6" />
-      </Switch.Root>
+          <Switch.Root
+            className="w-12 h-6 bg-gray-400 rounded-full relative data-[state=checked]:bg-green-500 transition"
+            checked={modifyMode}
+            onCheckedChange={setModifyMode}
+          >
+            <Switch.Thumb className="block w-5 h-5 bg-white rounded-full shadow-md transition-transform translate-x-0 data-[state=checked]:translate-x-6" />
+          </Switch.Root>
+        </div>
+      )}
       <div className="flex items-center space-x-4  ">
         {user && (
           <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
@@ -112,4 +118,4 @@ const ModifyBar: React.FC = () => {
   );
 };
 
-export default ModifyBar;
+export default AdminBar;
