@@ -230,9 +230,7 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
 
   return (
     <div className="p-4 ">
-      <h1 className="text-2xl font-bold">
-        {currentPage.name} - {modifyMode ? "True" : "False"}
-      </h1>
+      <h1 className="text-2xl font-bold">{currentPage.name}</h1>
       {modifyMode && (
         <div className=" flex flex-wrap items-center space-x-4 sm:space-x-2 text-sm mb-4">
           <div>

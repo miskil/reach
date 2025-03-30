@@ -13,7 +13,7 @@ interface TextEditorProps {
 const TextEditor: React.FC<TextEditorProps> = ({
   siteId,
   initialContent,
-  preview,
+
   onUpdate,
 }) => {
   const editor = useRef(null);

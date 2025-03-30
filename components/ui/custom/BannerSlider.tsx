@@ -12,7 +12,7 @@ import { Image } from "@/lib/types"; // Adjust the import path as necessary
 interface BannerSliderProps {
   siteId: string;
   initialImages: Image[];
-  preview: boolean;
+
   onImagesUpdate: (images: Image[]) => void;
   addImageUrlToBeDeleted: (imageUrl: string) => void;
 }

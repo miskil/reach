@@ -1,0 +1,26 @@
+import { Metadata } from "next";
+import { headers } from "next/headers";
+import BlogEditor from "@/components/ui/custom/BlogEditor";
+
+import { getCurrentBlog } from "@/lib/actions";
+
+interface Props {
+  params: Promise<{
+    site: string;
+    name: string;
+  }>;
+}
+export default async function CurrentBlog(props: Props) {
+  const headersList = await headers();
+  const siteId = headersList.get("x-siteid");
+  const params = await props.params;
+  let name = params.name;
+  name = decodeURIComponent(name); // Replace %20 with space
+
+  const currentBlog = await getCurrentBlog(siteId!, name);
+  return (
+    <div>
+      <BlogEditor blog={currentBlog!} siteId={siteId!} />
+    </div>
+  );
+}

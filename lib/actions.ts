@@ -23,6 +23,9 @@ import {
   teamMembers,
   activityLogs,
   paymentPages,
+  blogs,
+  blogCategories,
+  tags,
   type paymentPagesType,
   type NewUser,
   type NewTeam,
@@ -32,10 +35,13 @@ import {
   type NewSiteHeader,
   type Tenant,
   type PageType,
+  type blogsType,
   type CourseType,
   type ModulesType,
   type TeamMember,
   type NewPage,
+  type blogCategoriesType,
+  type tagType,
   ActivityType,
   invitations,
   menus,
@@ -50,6 +56,7 @@ import {
   validatedAction,
   validatedActionWithUser,
 } from "@/lib/auth/middleware";
+import { Tags } from "lucide-react";
 interface UpdateOrCreateSiteHeader {
   siteid: string;
   newHeader: string;
@@ -184,6 +191,10 @@ export async function getSitePages(siteId: string) {
   return await db.select().from(pages).where(eq(pages.siteId, siteId));
 }
 
+export async function getSiteBlogs(siteId: string) {
+  return await db.select().from(blogs).where(eq(blogs.siteId, siteId));
+}
+
 export async function getCurrentPage(siteId: string, name: string) {
   try {
     const result = await db
@@ -202,6 +213,177 @@ export async function getCurrentPage(siteId: string, name: string) {
   } catch (error) {
     console.error(`Error fetching page "${name}" for site "${siteId}":`, error);
     return null;
+  }
+}
+export async function getCurrentBlog(siteId: string, name: string) {
+  try {
+    const result = await db
+      .select()
+      .from(blogs)
+      .where(and(eq(blogs.siteId, siteId), eq(blogs.name, name)))
+      .limit(1);
+
+    if (result.length === 0) {
+      throw new Error(
+        `Blog with name "${name}" not found for site "${siteId}".`
+      );
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error(`Error fetching blog "${name}" for site "${siteId}":`, error);
+    return null;
+  }
+}
+export async function upinsertBlog(
+  siteId: string,
+  name: string,
+  layout: string,
+  menuItem: string,
+  category: string,
+  tags: string,
+  author: string,
+  authorbio: string,
+  authorimage: string,
+  blogImageURL: string,
+
+  content: any
+) {
+  let blog;
+
+  if (name) {
+    // Try to update the page if pageId is provided
+    try {
+      const updatedBlog = await db
+        .update(blogs)
+        .set({
+          siteId: siteId,
+          name: name,
+          layout: layout,
+          menuItem: menuItem,
+          category: category,
+          tags: tags,
+          author: author,
+          authorbio: authorbio,
+          authorimage: authorimage,
+          blogImageURL: blogImageURL,
+
+          content: content,
+        })
+        .where(eq(blogs.name, name))
+        .returning();
+
+      if (updatedBlog.length > 0) {
+        blog = updatedBlog[0];
+        revalidatePath(`${siteId}/admin/manageblogs/BlogUpdate/${name}`); // Revalidate the editor page
+      }
+    } catch (error) {
+      console.error("Error updating blog:", error);
+      throw new Error("Failed to update the blog.");
+    }
+  }
+
+  if (!blog) {
+    // Insert a new page if pageId is not found or not provided
+
+    try {
+      const newBlog = await db
+        .insert(blogs)
+        .values({
+          siteId: siteId,
+          name: name,
+          layout: layout,
+          menuItem: menuItem,
+          category: category,
+          tags: tags,
+          author: author,
+          authorbio: authorbio,
+          authorimage: authorimage,
+          blogImageURL: blogImageURL,
+          content: content,
+        }) // Assuming db.generateId() generates a new ID
+        .returning();
+
+      blog = newBlog[0];
+      revalidatePath("/"); // Revalidate the path to refresh the page list
+    } catch (error) {
+      console.error("Error creating blog:", error);
+      throw new Error("Failed to create a new blog.");
+    }
+  }
+
+  return blog;
+}
+
+export async function getBlogCategories(siteId: string) {
+  try {
+    // Fetch distinct categories from the blogs table for the given siteId
+    const categories = await db
+      .select({ name: blogCategories.name })
+      .from(blogCategories)
+      .where(eq(blogCategories.siteId, siteId));
+
+    // Map to get an array of unique category names
+    const categoryList = categories.map((cat) => cat.name).filter(Boolean);
+
+    return categoryList;
+  } catch (error) {
+    console.error("Error fetching blog categories:", error);
+    throw new Error("Failed to retrieve blog categories.");
+  }
+}
+export async function insertCategory(siteId: string, categoryName: string) {
+  try {
+    // Insert the new category into the blogs table
+    const newCategory = await db
+      .insert(blogCategories)
+      .values({ siteId, name: categoryName })
+      .returning();
+
+    if (newCategory.length === 0) {
+      throw new Error("Failed to insert the new category.");
+    }
+
+    return newCategory[0]; // Return the inserted category
+  } catch (error) {
+    console.error("Error inserting category:", error);
+    throw new Error("Failed to insert the new category.");
+  }
+}
+
+export async function getTags(siteId: string) {
+  try {
+    // Fetch distinct categories from the blogs table for the given siteId
+    const newtags = await db
+      .select({ name: tags.name })
+      .from(tags)
+      .where(eq(tags.siteId, siteId));
+
+    // Map to get an array of unique category names
+    const tagList = newtags.map((tag) => tag.name).filter(Boolean);
+
+    return tagList;
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+    throw new Error("Failed to retrieve tags.");
+  }
+}
+export async function insertTag(siteId: string, tagName: string) {
+  try {
+    // Insert the new category into the blogs table
+    const newTag = await db
+      .insert(tags)
+      .values({ siteId, name: tagName })
+      .returning();
+
+    if (newTag.length === 0) {
+      throw new Error("Failed to insert the new category.");
+    }
+
+    return newTag[0]; // Return the inserted category
+  } catch (error) {
+    console.error("Error inserting tag:", error);
+    throw new Error("Failed to insert the new tag.");
   }
 }
 

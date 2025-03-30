@@ -35,6 +35,44 @@ export const pages = pgTable("pages", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
+export const blogs = pgTable("blogs", {
+  id: serial("id").primaryKey(),
+  siteId: varchar("siteId")
+    .notNull()
+    .references(() => tenants.tenant),
+
+  name: varchar("name", { length: 255 }).notNull(),
+  layout: varchar("layout", { length: 50 }).notNull(),
+  menuItem: varchar("menu_item", { length: 255 }),
+  category: varchar("category", { length: 255 }),
+  tags: varchar("tags", { length: 255 }),
+  author: varchar("author", { length: 255 }),
+  authorbio: varchar("authorbio", { length: 255 }),
+  authorimage: varchar("authorimage", { length: 255 }),
+  blogImageURL: varchar("blogImageURL", { length: 255 }),
+  content: jsonb("content").notNull(), // Stores layout-specific content as JSON
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+export const blogCategories = pgTable("blogCategories", {
+  id: serial("id").primaryKey(),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const tags = pgTable("tags", {
+  id: serial("id").primaryKey(),
+  siteId: varchar("siteId").references(() => tenants.tenant),
+
+  name: varchar("name", { length: 255 }).notNull(),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 export const tenants = pgTable("tenants", {
   id: serial("id").unique(),
   tenant: varchar("tenant", { length: 100 }).primaryKey().notNull(),
@@ -221,6 +259,9 @@ export type Tenant = typeof tenants.$inferSelect;
 
 export type Pages = typeof pages.$inferSelect;
 export type NewPage = typeof pages.$inferInsert;
+export type blogsType = typeof blogs.$inferSelect;
+export type blogCategoriesType = typeof blogCategories.$inferSelect;
+export type tagType = typeof tags.$inferInsert;
 export type NewTenant = typeof tenants.$inferInsert;
 export type NewSiteHeader = typeof siteheader.$inferInsert;
 export type SiteHeader = typeof siteheader.$inferSelect;

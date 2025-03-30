@@ -16,7 +16,7 @@ import { SquareX } from "lucide-react"; // Adjust the import path as necessary
 interface PageRendererProps {
   siteId: string;
   pageName?: string;
-  preview: boolean;
+
   content: {
     components: Array<{
       id: string;
@@ -33,7 +33,7 @@ interface PageRendererProps {
 const PageRenderer: React.FC<PageRendererProps> = ({
   siteId,
   pageName,
-  preview,
+
   content,
 
   onUpdate,
@@ -144,7 +144,6 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             key={component.id}
             siteId={siteId}
             initialImages={component.widget.Image}
-            preview={preview}
             onImagesUpdate={(updatedImages) =>
               updateComponentWidget(component.id, {
                 ...component.widget,
@@ -177,7 +176,6 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             pageName={pageName}
             idxComponent={index}
             initialTiles={component.widget.Tile}
-            preview={preview}
             onTilesUpdate={(updatedTiles) =>
               updateComponentWidget(component.id, {
                 ...component.widget,
@@ -193,7 +191,6 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             key={component.id}
             siteId={siteId}
             initialContent={component.widget.content}
-            preview={preview}
             onUpdate={(text) =>
               updateComponentWidget(component.id, {
                 ...component.widget,

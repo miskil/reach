@@ -32,6 +32,8 @@ const AdminBar: React.FC = () => {
   const adminPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
   const ManagePagePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
   const ManageCoursePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managecourse`;
+  const ManageBlogsPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/manageblogs`;
+
   const Base = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}`;
 
   const handleAdminClick = () => {
@@ -44,6 +46,12 @@ const AdminBar: React.FC = () => {
     setShowModifySwitch(true);
     router.refresh;
     router.push(ManagePagePath);
+  };
+  const handleManageBlogsClick = () => {
+    setAdminMode(!adminMode);
+    setShowModifySwitch(true);
+    router.refresh;
+    router.push(ManageBlogsPath);
   };
   const handleManageCourseClick = () => {
     setAdminMode(!adminMode);
@@ -93,6 +101,14 @@ const AdminBar: React.FC = () => {
               >
                 <Home className="mr-2 h-4 w-4" />
                 <span>Manage Page</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                onClick={handleManageBlogsClick}
+              >
+                <Home className="mr-2 h-4 w-4" />
+                <span>Manage Blogs</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className={`cursor-pointer

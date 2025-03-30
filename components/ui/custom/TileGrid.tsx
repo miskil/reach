@@ -23,7 +23,6 @@ interface TileGridProps {
   idxComponent?: number;
   idxTile?: number;
   initialTiles: Tile[];
-  preview: boolean;
 
   onTilesUpdate: (tiles: Tile[]) => void;
 
@@ -36,7 +35,7 @@ const TileGrid: React.FC<TileGridProps> = ({
   idxComponent,
   idxTile,
   initialTiles,
-  preview,
+
   onTilesUpdate,
 
   addImageUrlToBeDeleted,
