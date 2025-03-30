@@ -27,6 +27,7 @@ jobs:
             cd reach  # Change to your project directory
             git pull origin main  # Pull latest code
             npm install  # Install dependencies
+            npx drizzle-kit push
             npm run build  # Build Next.js app
             pm2 restart reach  # Restart the app
           EOF
