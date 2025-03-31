@@ -275,7 +275,6 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
         <PageRenderer
           siteId={siteId}
           content={(currentPage.content as ContentType) || []}
-          preview={preview}
           onUpdate={(updatedContent) => {
             setCurrentPage((prevPage: PageType | null) =>
               prevPage ? { ...prevPage, content: updatedContent } : null

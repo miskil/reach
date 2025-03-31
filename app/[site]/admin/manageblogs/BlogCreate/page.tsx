@@ -8,6 +8,13 @@ export default async function BlogCreate() {
     siteId: "",
     name: "New Blog",
     layout: "defaultLayout",
+    category: "",
+    tags: "", // Comma-separated tags
+    author: "Admin", // Default author
+    authorbio: "Admin Bio", // Default author bio
+    authorimage: "/default-author-image.png", // Default author image
+    blogImageURL: "/default-blog-image.png", // Default blog image URL
+
     content: {},
     menuItem: "exampleMenuItem",
     is_active: true,

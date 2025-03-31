@@ -40,7 +40,6 @@ const PageDisplay: React.FC<PageDisplayProps> = ({ page, siteId }) => {
         siteId={siteId}
         pageName={page.name}
         content={currentPage.content as ContentType}
-        preview={false}
         onUpdate={(updatedContent) =>
           setCurrentPage((prevPage: PageType | null) =>
             prevPage ? { ...prevPage, content: updatedContent } : null

@@ -20,7 +20,7 @@ interface BannerSliderProps {
 const BannerSlider: React.FC<BannerSliderProps> = ({
   siteId,
   initialImages,
-  preview,
+
   onImagesUpdate,
   addImageUrlToBeDeleted,
 }) => {

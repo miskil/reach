@@ -6,7 +6,7 @@ import { useUser } from "@/lib/auth";
 interface TextEditorProps {
   siteId: string;
   initialContent: string;
-  preview: boolean;
+
   onUpdate: (content: string) => void;
 }
 

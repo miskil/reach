@@ -41,7 +41,6 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
         <BannerSlider
           siteId={siteId}
           initialImages={content!.components[idxComponent].widget.Image || []}
-          preview={false}
           onImagesUpdate={(updatedImages) => {}}
           addImageUrlToBeDeleted={(imageUrl) => {}}
         />
@@ -53,7 +52,6 @@ const ItemDisplay: React.FC<PageDisplayProps> = ({
           idxTile={index}
           idxComponent={idxComponent}
           initialTiles={content!.components[idxComponent].widget.Tile || []}
-          preview={false}
           onTilesUpdate={(updatedTiles) => {}}
           addImageUrlToBeDeleted={(imageUrl) => {}}
         />
