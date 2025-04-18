@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { headers } from "next/headers";
-import PageEditor from "@/components/ui/custom/PageEditor";
+import PageDisplay from "@/components/ui/custom/PageEditor";
 
 import { getCurrentPage } from "@/lib/actions";
 
@@ -11,16 +11,16 @@ interface Props {
   }>;
 }
 export default async function CurrentPage(props: Props) {
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
   const params = await props.params;
+  const siteId = params.site;
+
   let name = params.name;
   name = decodeURIComponent(name); // Replace %20 with space
 
   const currentPage = await getCurrentPage(siteId!, name);
   return (
     <div>
-      <PageEditor page={currentPage!} siteId={siteId!} />
+      <PageDisplay page={currentPage} siteId={siteId!} />
     </div>
   );
 }

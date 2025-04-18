@@ -2,7 +2,11 @@ import BlogEditor from "@/components/ui/custom/BlogEditor";
 import { blogsType } from "@/lib/db/schema";
 import { headers } from "next/headers";
 
-export default async function BlogCreate() {
+export default async function BlogCreate({
+  params,
+}: {
+  params: { site: string };
+}) {
   const blogData: blogsType = {
     id: 1,
     siteId: "",
@@ -21,8 +25,7 @@ export default async function BlogCreate() {
     created_at: new Date(),
     updated_at: new Date(),
   };
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
+  const siteId = params.site;
 
   return (
     <div>

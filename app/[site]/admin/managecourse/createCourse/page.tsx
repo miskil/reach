@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { headers } from "next/headers";
 import CourseEditor from "@/components/ui/custom/CourseEditor";
 
 import { getCoursebyTitle } from "@/lib/actions";
@@ -11,9 +10,8 @@ interface Props {
   }>;
 }
 export default async function CurrentCourse(props: Props) {
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
   const params = await props.params;
+  const siteId = params.site; // Access the [site] slug from the URL
   let name = params.name;
   name = decodeURIComponent(name); // Replace %20 with space
 

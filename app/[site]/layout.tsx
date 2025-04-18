@@ -10,11 +10,14 @@ import { getMenuItems } from "@/lib/actions";
 
 interface LayoutProps {
   children: React.ReactNode;
+  params: {
+    site: string;
+  };
 }
 
-export default async function SlugLayout({ children }: LayoutProps) {
+export default async function SlugLayout({ children, params }: LayoutProps) {
   const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
+  const siteId = params.site;
   const menus = await getMenuItems(siteId!);
 
   return (

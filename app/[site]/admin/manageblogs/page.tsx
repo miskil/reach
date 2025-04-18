@@ -1,13 +1,15 @@
-import { headers } from "next/headers";
 import BlogList from "@/components/ui/custom/bloglist";
 import { getSiteBlogs } from "@/lib/actions";
 
-export default async function ManagePage() {
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
+export default async function ManagePage({
+  params,
+}: {
+  params: { site: string };
+}) {
+  const siteId = params.site;
 
   if (!siteId) {
-    return <div>Error: Site ID is missing in the headers.</div>;
+    return <div>Error: Site ID is missing .</div>;
   }
 
   let pages;

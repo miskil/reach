@@ -2,6 +2,7 @@ import { compare, hash } from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NewUser } from "@/lib/db/schema";
+import { getBaseDomain } from "@/lib/utils";
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
 const SALT_ROUNDS = 10;
@@ -44,6 +45,8 @@ export async function getSession() {
 }
 
 export async function setSession(user: NewUser) {
+  const baseDomain = getBaseDomain();
+
   const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const session: SessionData = {
     user: { id: user.id! },
@@ -54,7 +57,9 @@ export async function setSession(user: NewUser) {
   (await cookies()).set("session", encryptedSession, {
     expires: expiresInOneDay,
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
+    domain: baseDomain, // 👈 allows all subdomains to access this cookie
+    path: "/",
   });
 }

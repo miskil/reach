@@ -1,8 +1,12 @@
 import PageEditor from "@/components/ui/custom/PageEditor";
 import { PageType } from "@/lib/db/schema";
-import { headers } from "next/headers";
 
-export default async function PageCreate() {
+export default async function PageCreate({
+  params,
+}: {
+  params: { site: string };
+}) {
+  const siteId = params.site;
   const pageData: PageType = {
     id: 1,
     siteId: "",
@@ -14,8 +18,6 @@ export default async function PageCreate() {
     created_at: new Date(),
     updated_at: new Date(),
   };
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
 
   return (
     <div>

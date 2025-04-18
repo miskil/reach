@@ -1,10 +1,12 @@
-import { headers } from "next/headers";
 import PageList from "@/components/ui/custom/pagelist";
 import { getSitePages } from "@/lib/actions";
 
-export default async function SitePages() {
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
+export default async function SitePages({
+  params,
+}: {
+  params: { site: string };
+}) {
+  const siteId = params.site; // Access the [site] slug from the URL
 
   if (!siteId) {
     return <div>Error: Site ID is missing in the headers.</div>;

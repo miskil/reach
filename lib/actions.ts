@@ -8,7 +8,7 @@ import fs from "fs";
 import path from "path";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
-
+import { subdomainURL } from "./utils";
 import {
   User,
   users,
@@ -1009,8 +1009,13 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return createCheckoutSession({ team: foundTeam, priceId });
   }
 
-  if (foundUser.siteId) redirect(`/${foundUser.siteId}`);
-  redirect("/registersite");
+  if (foundUser.siteId) {
+    const gotoURL = subdomainURL(foundUser.siteId, "/pages");
+    console.log("Redirecting to: ", gotoURL);
+    redirect(gotoURL);
+  } else {
+    redirect("/registersite");
+  }
 });
 
 const signUpSchema = z.object({

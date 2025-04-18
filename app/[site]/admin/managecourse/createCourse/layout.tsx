@@ -1,13 +1,14 @@
 import CourseEditor from "@/components/ui/custom/CourseEditor";
-import { headers } from "next/headers";
 
 import { getCoursebyTitle } from "@/lib/actions";
 import { Course } from "@/lib/types";
 
 export default async function courselayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { site: string };
 }) {
   const blankCourse = {
     id: 0,
@@ -15,8 +16,7 @@ export default async function courselayout({
     pageUrl: "",
     modules: [],
   };
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
+  const siteId = params.site; // Access the site slug from params
 
   return (
     <main className="min-h-screen p-4">

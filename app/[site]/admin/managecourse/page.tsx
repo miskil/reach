@@ -2,12 +2,15 @@ import { headers } from "next/headers";
 import CourseList from "@/components/ui/custom/CourseList";
 import { getCourses } from "@/lib/actions";
 
-export default async function ManageCourses() {
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
+export default async function ManageCourses({
+  params,
+}: {
+  params: { site: string };
+}) {
+  const siteId = params.site;
 
   if (!siteId) {
-    return <div>Error: Site ID is missing in the headers.</div>;
+    return <div>Error: Site ID is missing .</div>;
   }
 
   let courses;

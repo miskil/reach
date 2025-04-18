@@ -140,7 +140,7 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   };
   return (
     <header className="border-b border-gray-200">
-      {user && <AdminBar />}
+      {user && <AdminBar siteid={siteid} />}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <div className="relative">

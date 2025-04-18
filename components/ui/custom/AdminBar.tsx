@@ -3,6 +3,7 @@
 import * as Switch from "@radix-ui/react-switch";
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { subdomainURL } from "@/lib/utils";
 
 import { useUser } from "@/lib/auth";
 import { MousePointerClick, CircleIcon, Home, LogOut } from "lucide-react";
@@ -18,21 +19,25 @@ import {
   isSiteRegistered,
   getSiteHeaderElements,
 } from "@/lib/actions";
+type AdminBarProps = {
+  siteid: string;
+};
 
-const AdminBar: React.FC = () => {
+const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
+  const pathname = usePathname();
+  const isAdminPath = pathname.includes("/admin");
+
   const { user, setUser, modifyMode, setModifyMode, adminMode, setAdminMode } =
     useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showModifySwitch, setShowModifySwitch] = useState(false);
+  const [showModifySwitch, setShowModifySwitch] = useState(true);
   const router = useRouter();
 
-  const pathname = usePathname();
-  const siteid = pathname.split("/")[1]; // Get the first segment after "/"
   console.log("siteId", siteid);
-  const adminPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
-  const ManagePagePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managepage`;
-  const ManageCoursePath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/managecourse`;
-  const ManageBlogsPath = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}/admin/manageblogs`;
+  const adminPath = subdomainURL(siteid, "admin/managepage");
+  const ManagePagePath = subdomainURL(siteid, "admin/managepage");
+  const ManageCoursePath = subdomainURL(siteid, "admin/managecourse");
+  const ManageBlogsPath = subdomainURL(siteid, "admin/manageblogs");
 
   const Base = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}`;
 
@@ -66,7 +71,7 @@ const AdminBar: React.FC = () => {
 
   return (
     <div className=" w-full bg-black text-white p-4 flex justify-end items-center space-x-4">
-      {showModifySwitch && (
+      {showModifySwitch && isAdminPath && (
         <div className="flex items-center space-x-4">
           <span className="text-sm font-semibold">Modify</span>
 

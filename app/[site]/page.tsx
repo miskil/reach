@@ -2,9 +2,12 @@ import { getCurrentPage } from "@/lib/actions";
 import { headers } from "next/headers";
 import PageDisplay from "@/components/ui/custom/PageDisplay";
 
-export default async function SiteHomePage() {
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
+export default async function SiteHomePage({
+  params,
+}: {
+  params: { site: string };
+}) {
+  const siteId = params.site; // Access the [site] slug from the URL
   const currentPage = await getCurrentPage(siteId!, "home");
 
   if (!currentPage) {

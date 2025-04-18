@@ -24,6 +24,7 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-wtype", widgetType);
   requestHeaders.set("x-widx", widgetidx);
   requestHeaders.set("x-itemidx", itemidx);
+  console.log("in middleware");
 
   const sessionCookie = request.cookies.get("session");
   const isProtectedRoute = pathname.startsWith(`/${siteId}/${protectedRoutes}`);
@@ -64,8 +65,39 @@ export async function middleware(request: NextRequest) {
       }
     }
   }
+  const hostname = request.headers.get("host") || "";
 
-  return response;
+  const subdomain =
+    process.env.NODE_ENV === "development"
+      ? hostname.replace(".lvh.me:3000", "")
+      : hostname.replace(".reachu.org", "");
+  console.log("subdomain", subdomain);
+
+  console.log("hostname", hostname);
+
+  // Skip root domain (e.g., www or no subdomain)
+  if (
+    subdomain === "www" ||
+    subdomain === "localhost" ||
+    hostname === "reachu.org" ||
+    subdomain === "lvh.me" ||
+    subdomain === "lvh.me:3000" ||
+    subdomain === "localhost:3000"
+  ) {
+    console.log("skipping root domain");
+    return NextResponse.next();
+  }
+
+  // Rewrite URL from `/admin` → `/{subdomain}/admin`
+  console.log("pathname", pathname);
+  if (pathname !== "/") {
+    url.pathname = `/${subdomain}${pathname}`;
+    console.log("url", url.pathname);
+    return NextResponse.rewrite(url);
+  } else {
+    return NextResponse.next();
+  }
+  //return response;
 }
 
 export const config = {
