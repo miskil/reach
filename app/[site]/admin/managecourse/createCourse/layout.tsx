@@ -8,7 +8,7 @@ export default async function courselayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { site: string };
+  params: Promise<{ site: string }>;
 }) {
   const blankCourse = {
     id: 0,
@@ -16,14 +16,14 @@ export default async function courselayout({
     pageUrl: "",
     modules: [],
   };
-  const siteId = params.site; // Access the site slug from params
+  const { site } = await params; // Extract the siteId property from params
 
   return (
     <main className="min-h-screen p-4">
       <div className="flex flex-col lg:flex-row overflow-y-scroll bg-gray-1100 bg-[url('/grid.svg')] pb-36">
         {/* Sidebar  */}
         <div className="lg:w-60 lg:flex-shrink-0">
-          <CourseEditor siteId={siteId || ""} initialCourse={blankCourse!} />
+          <CourseEditor siteId={site || ""} initialCourse={blankCourse!} />
         </div>
 
         {/* Divider */}

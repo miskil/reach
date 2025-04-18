@@ -2,10 +2,12 @@ import BlogEditor from "@/components/ui/custom/BlogEditor";
 import { blogsType } from "@/lib/db/schema";
 import { headers } from "next/headers";
 
-export default async function BlogCreate({
+import { type Metadata } from "next";
+
+export default async function Page({
   params,
 }: {
-  params: { site: string };
+  params: Promise<{ site: string }>;
 }) {
   const blogData: blogsType = {
     id: 1,
@@ -25,11 +27,11 @@ export default async function BlogCreate({
     created_at: new Date(),
     updated_at: new Date(),
   };
-  const siteId = params.site;
+  const { site } = await params;
 
   return (
     <div>
-      <BlogEditor blog={blogData} siteId={siteId!} />
+      <BlogEditor blog={blogData} siteId={site!} />
     </div>
   );
 }

@@ -4,9 +4,9 @@ import { PageType } from "@/lib/db/schema";
 export default async function PageCreate({
   params,
 }: {
-  params: { site: string };
+  params: Promise<{ site: string }>;
 }) {
-  const siteId = params.site;
+  const { site } = await params;
   const pageData: PageType = {
     id: 1,
     siteId: "",
@@ -21,7 +21,7 @@ export default async function PageCreate({
 
   return (
     <div>
-      <PageEditor page={pageData} siteId={siteId!} />
+      <PageEditor page={pageData} siteId={site!} />
     </div>
   );
 }

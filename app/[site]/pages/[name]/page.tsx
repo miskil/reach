@@ -11,16 +11,16 @@ interface Props {
   }>;
 }
 export default async function CurrentPage(props: Props) {
-  const params = await props.params;
-  const siteId = params.site;
+  const { site, name } = await props.params;
+  //const siteId = params.site;
 
-  let name = params.name;
-  name = decodeURIComponent(name); // Replace %20 with space
+  //let name = params.name;
+  const name1 = decodeURIComponent(name); // Replace %20 with space
 
-  const currentPage = await getCurrentPage(siteId!, name);
+  const currentPage = await getCurrentPage(site!, name1);
   return (
     <div>
-      <PageDisplay page={currentPage} siteId={siteId!} />
+      {currentPage && <PageDisplay page={currentPage} siteId={site!} />}
     </div>
   );
 }

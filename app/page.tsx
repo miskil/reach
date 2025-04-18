@@ -1,19 +1,18 @@
-import { Button } from '@/components/ui/button';
-import { ArrowRight, CreditCard, Database } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { ArrowRight, CreditCard, Database } from "lucide-react";
 //import { Terminal } from './terminal';
-import { getUser } from '@/lib/db/queries';
+import { getUser } from "@/lib/db/queries";
 import Image from "next/image";
+import { subdomainURL } from "@/lib/utils";
 
 export default async function HomePage() {
   const user = await getUser();
-  let nextURL= "";
-  if (user && user.siteId)
-         nextURL= `./${user.siteId}`
-    else if (user)
-      nextURL=  './registersite'
-    else
-        nextURL= './sign-up'
-/*
+  let nextURL = "";
+  if (user && user.siteId) {
+    nextURL = subdomainURL(user.siteId, "/pages");
+  } else if (user) nextURL = "./registersite";
+  else nextURL = "./sign-up";
+  /*
   const  nextURL = ()=>{
     if (user && user.siteId)
         return `./${user.siteId}`
@@ -26,13 +25,14 @@ export default async function HomePage() {
 
   return (
     <main>
-      <section className="py-20"
+      <section
+        className="py-20"
         style={{
-      backgroundImage: "url('/reachhero.jpg')",
-      backgroundSize: 'cover',
-      backgroundPosition: 'right',
-      backgroundRepeat: 'no-repeat'
-    }}
+          backgroundImage: "url('/reachhero.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "right",
+          backgroundRepeat: "no-repeat",
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
@@ -43,28 +43,22 @@ export default async function HomePage() {
               </h1>
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
                 Launch your Reach website in record time with our powerful,
-                tools to integrate with social media and communicate with your users. 
+                tools to integrate with social media and communicate with your
+                users.
               </p>
               <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
-                <a
-                  href= {nextURL}
-                  
-                >
+                <a href={nextURL}>
                   <Button className="bg-white hover:bg-gray-100 text-black border border-gray-200 rounded-full text-lg px-8 py-4 inline-flex items-center justify-center">
-                    {user ? 'Resume' : "Get Started"}
+                    {user ? "Resume" : "Get Started"}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </a>
               </div>
             </div>
-            <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center">
-        
-            </div>
+            <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center"></div>
           </div>
         </div>
       </section>
-      
-
     </main>
   );
 }

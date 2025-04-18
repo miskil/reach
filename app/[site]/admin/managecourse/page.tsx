@@ -5,21 +5,21 @@ import { getCourses } from "@/lib/actions";
 export default async function ManageCourses({
   params,
 }: {
-  params: { site: string };
+  params: Promise<{ site: string }>;
 }) {
-  const siteId = params.site;
+  const { site } = await params;
 
-  if (!siteId) {
+  if (!site) {
     return <div>Error: Site ID is missing .</div>;
   }
 
   let courses;
   try {
-    courses = await getCourses(siteId);
+    courses = await getCourses(site);
   } catch (error) {
     console.error("Failed to fetch site pages:", error);
     return <div>Error: Failed to fetch site courses.</div>;
   }
 
-  return <CourseList siteId={siteId} courses={courses} />;
+  return <CourseList siteId={site} courses={courses} />;
 }

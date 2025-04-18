@@ -5,20 +5,21 @@ import { getSitePages } from "@/lib/actions";
 export default async function ManagePage({
   params,
 }: {
-  params: { site: string };
+  params: Promise<{ site: string }>;
 }) {
-  const siteId = params.site;
-  if (!siteId) {
+  const { site } = await params;
+
+  if (!site) {
     return <div>Error: Site ID is missing in the headers.</div>;
   }
 
   let pages;
   try {
-    pages = await getSitePages(siteId);
+    pages = await getSitePages(site);
   } catch (error) {
     console.error("Failed to fetch site pages:", error);
     return <div>Error: Failed to fetch site pages.</div>;
   }
 
-  return <PageList siteId={siteId} pages={pages} admin={true} />;
+  return <PageList siteId={site} pages={pages} admin={true} />;
 }

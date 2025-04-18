@@ -10,12 +10,12 @@ interface Props {
   }>;
 }
 export default async function CurrentCourse(props: Props) {
-  const params = await props.params;
-  const siteId = params.site; // Access the [site] slug from the URL
-  let name = params.name;
-  name = decodeURIComponent(name); // Replace %20 with space
+  const { site, name } = await props.params;
+  //const {siteId} = params.site; // Access the [site] slug from the URL
+  //let name = params.name;
+  const name1 = decodeURIComponent(name); // Replace %20 with space
 
-  const currentCourse = await getCoursebyTitle(siteId!, name);
+  const currentCourse = await getCoursebyTitle(site!, name1);
   //<CourseEditor initialCourse={currentCourse![0]} siteId={siteId!} />;
   return (
     <div>

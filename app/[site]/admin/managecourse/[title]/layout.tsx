@@ -18,10 +18,9 @@ export default async function courselayout({ children, params }: Props) {
     pageUrl: "",
     modules: [],
   };
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
   const resolvedParams = await params;
   const courseTitle = resolvedParams.title;
+  const siteId = resolvedParams.site;
   const currentCourse = await getCoursebyTitle(siteId!, courseTitle);
 
   return (
