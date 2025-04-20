@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main  # Runs when code is pushed to 'main'
+      - reach-v2 #Runs reach-v2
 
 jobs:
   deploy:
