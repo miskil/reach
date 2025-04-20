@@ -1,0 +1,37 @@
+name: Deploy Next.js to AWS
+
+on:
+  push:
+    branches:
+      
+      - reach-v2 #Runs reach-v2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # GitHub Actions runner
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3  # Gets the latest code
+
+      - name: Set up SSH Key
+        run: |
+          echo "${{ secrets.AWS_SSH_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+          ssh-keygen -y -f private_key.pem > /dev/null  # Verify the key is valid
+        env:
+          AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
+
+      - name: Deploy Code to AWS
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} << 'EOF'
+            cd reach  # Change to your project directory
+            git pull origin main  # Pull latest code
+            npm install  # Install dependencies
+            npx drizzle-kit push
+            npm run build  # Build Next.js app
+            pm2 restart reach  # Restart the app
+          EOF
+        env:
+          AWS_USER: ${{ secrets.AWS_USER }}
+          AWS_HOST: ${{ secrets.AWS_HOST }}
