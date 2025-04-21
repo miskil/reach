@@ -1,0 +1,31 @@
+// app/[slug]/layout.tsx
+import { headers } from "next/headers";
+
+import Header from "@/components/ui/custom/testheader";
+import SiteHeader from "@/components/ui/custom/siteheader";
+
+import SiteHeaderUI from "@/components/ui/custom/siteheaderui";
+import SiteMenus from "@/components/ui/custom/sitemenus";
+import { getMenuItems } from "@/lib/actions";
+
+interface LayoutProps {
+  children: React.ReactNode;
+  params: {
+    site: string;
+  };
+}
+
+export default async function SlugLayout({ children, params }: LayoutProps) {
+  const headersList = await headers();
+  const siteId = params.site;
+  const menus = await getMenuItems(siteId!);
+
+  return (
+    <section className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
+      <SiteHeader siteid={siteId!} HeaderUI={SiteHeaderUI} />
+      <SiteMenus siteid={siteId!} menusdata={menus} />
+      {/*<Header />*/}
+      {children}
+    </section>
+  );
+}
