@@ -53,6 +53,8 @@ export default function RegisterSite() {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
       const [httpvar, hostroot] = baseUrl.split("//");
       const redirectUrl = subdomainURL(siteId, "admin/managepage/PageCreate");
+      console.log("SiteId:", siteId);
+      console.log;
       console.log("Redirect URL:", redirectUrl);
       console.log("httpvar:", httpvar);
 

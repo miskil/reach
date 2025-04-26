@@ -9,6 +9,10 @@ import {
   boolean,
   jsonb,
   numeric,
+  uuid,
+  primaryKey,
+  foreignKey,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -104,38 +108,53 @@ export const menus = pgTable("menus", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
-export const courses = pgTable("courses", {
-  id: serial("id").primaryKey(),
-  siteId: varchar("siteId").references(() => tenants.tenant),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: text("description"),
-  course_url: varchar("course_url", { length: 255 }),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
-});
-export const modules = pgTable("modules", {
-  id: serial("id").primaryKey(),
-  courseId: integer("courseId").references(() => courses.id),
+/** Courses */
+
+export const course_content = pgTable("course_content", {
+  id: uuid("id").primaryKey().defaultRandom(),
   siteId: varchar("siteId").references(() => tenants.tenant),
 
-  name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
-  order: integer("order").notNull(),
-  module_url: varchar("module_url", { length: 255 }),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+  content: text("content").notNull(),
 });
-export const topics = pgTable("topics", {
-  id: serial("id").primaryKey(),
-  moduleId: integer("moduleId").references(() => modules.id),
-  siteId: varchar("siteId").references(() => tenants.tenant),
 
-  name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
-  order: integer("order").notNull(),
-  topic_url: varchar("topic_url", { length: 255 }),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+export const course = pgTable("course", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  site_id: varchar("site_id").references(() => tenants.tenant),
+
+  name: text("name").notNull().unique(),
+  content_id: uuid("content_id").references(() => course_content.id),
+});
+
+export const course_modules = pgTable("course_modules", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  site_id: varchar("site_id").references(() => tenants.tenant),
+
+  course_id: uuid("course_id").references(() => course.id),
+  name: text("name").notNull(),
+  content_id: uuid("content_id").references(() => course_content.id),
+});
+
+export const course_topics = pgTable("course_topics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  site_id: varchar("site_id").references(() => tenants.tenant),
+
+  module_id: uuid("module_id").references(() => course_modules.id),
+  name: text("name").notNull(),
+  content_id: uuid("content_id").references(() => course_content.id),
+});
+
+// Relations
+export const course_modules_link = pgTable("course_modules_link", {
+  course_id: uuid("course_id").references(() => course.id),
+  site_id: varchar("site_id").references(() => tenants.tenant),
+
+  module_id: uuid("module_id").references(() => course_modules.id),
+});
+
+export const course_module_topics_link = pgTable("course_module_topics_link", {
+  module_id: uuid("module_id").references(() => course_modules.id),
+  site_id: varchar("site_id").references(() => tenants.tenant),
+  topic_id: uuid("topic_id").references(() => course_topics.id),
 });
 export const paymentPages = pgTable("payment_pages", {
   id: serial("id").primaryKey(),
@@ -266,9 +285,11 @@ export type NewTenant = typeof tenants.$inferInsert;
 export type NewSiteHeader = typeof siteheader.$inferInsert;
 export type SiteHeader = typeof siteheader.$inferSelect;
 export type PageType = typeof pages.$inferSelect;
-export type CourseType = typeof courses.$inferSelect;
-export type ModulesType = typeof modules.$inferSelect;
-export type TopicsType = typeof topics.$inferSelect;
+export type CourseContentType = typeof course_content.$inferInsert;
+export type CourseModuleType = typeof course_modules.$inferInsert;
+export type CourseTopicType = typeof course_topics.$inferInsert;
+
+export type CourseType = typeof course.$inferSelect;
 export type paymentPagesType = typeof paymentPages.$inferSelect;
 
 export type SiteMenusType = typeof menus.$inferSelect;

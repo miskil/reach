@@ -10,20 +10,18 @@ import { getMenuItems } from "@/lib/actions";
 
 interface LayoutProps {
   children: React.ReactNode;
-  params: {
-    site: string;
-  };
+  params: Promise<{ site: string }>;
 }
 
 export default async function SlugLayout({ children, params }: LayoutProps) {
-  const headersList = await headers();
-  const siteId = params.site;
-  const menus = await getMenuItems(siteId!);
+  const { site } = await params; // Access the [site] slug from the URL
+
+  const menus = await getMenuItems(site!);
 
   return (
     <section className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
-      <SiteHeader siteid={siteId!} HeaderUI={SiteHeaderUI} />
-      <SiteMenus siteid={siteId!} menusdata={menus} />
+      <SiteHeader siteid={site!} HeaderUI={SiteHeaderUI} />
+      <SiteMenus siteid={site!} menusdata={menus} />
       {/*<Header />*/}
       {children}
     </section>

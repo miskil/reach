@@ -303,6 +303,26 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ blog, siteId }) => {
                   value={tags}
                 />
               </div>
+              {/* Check Box for Course Material */}
+              <div>
+                <label className="block mb-1">Course Material:</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="courseMaterial"
+                    name="contentType"
+                    value="courseMaterial"
+                    onChange={(e) => {
+                      console.log("Course Material selected:", e.target.value);
+                      setIsDirty(true); // Mark as dirty when the radio button is selected
+                    }}
+                    className="cursor-pointer"
+                  />
+                  <label htmlFor="courseMaterial" className="cursor-pointer">
+                    Course Material
+                  </label>
+                </div>
+              </div>
 
               <div>
                 {isDirty && (

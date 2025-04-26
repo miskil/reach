@@ -47,3 +47,25 @@ export interface SectionHeader {
   textColor: string;
   headerText: string;
 }
+
+export interface CourseProps {
+  id?: string;
+  siteId: string;
+  name: string;
+  content_id: string;
+  content: string;
+
+  modules: {
+    id?: string;
+    name: string;
+    content_id: string;
+    content: string;
+
+    topics: {
+      id?: string;
+      name: string;
+      content_id: string;
+      content: string;
+    }[];
+  }[];
+}

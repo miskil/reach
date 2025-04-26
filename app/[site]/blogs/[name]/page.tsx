@@ -11,9 +11,8 @@ interface Props {
   }>;
 }
 export default async function CurrentBlog(props: Props) {
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
   const params = await props.params;
+  const siteId = params.site;
   let name = params.name;
   name = decodeURIComponent(name); // Replace %20 with space
 

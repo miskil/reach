@@ -2,21 +2,24 @@ import { headers } from "next/headers";
 import BlogList from "@/components/ui/custom/bloglist";
 import { getSiteBlogs } from "@/lib/actions";
 
-export default async function SitePages() {
-  const headersList = await headers();
-  const siteId = headersList.get("x-siteid");
+export default async function Blogs({
+  params,
+}: {
+  params: Promise<{ site: string }>;
+}) {
+  const { site } = await params; // Access the [site] slug from the URL
 
-  if (!siteId) {
-    return <div>Error: Site ID is missing in the headers.</div>;
+  if (!site) {
+    return <div>Error: Site ID is missing .</div>;
   }
 
   let blogs;
   try {
-    blogs = await getSiteBlogs(siteId);
+    blogs = await getSiteBlogs(site);
   } catch (error) {
     console.error("Failed to fetch site blogs:", error);
     return <div>Error: Failed to fetch site blogs.</div>;
   }
 
-  return <BlogList siteId={siteId} Blogs={blogs} />;
+  return <BlogList siteId={site} Blogs={blogs} />;
 }

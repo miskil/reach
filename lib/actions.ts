@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { and, asc, eq, sql, inArray } from "drizzle-orm";
 import { db } from "@/lib/db/drizzle";
-import { Course } from "../lib/types";
+import { CourseProps } from "../lib/types";
 import fs from "fs";
 import path from "path";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
@@ -16,9 +16,6 @@ import {
   tenants,
   siteheader,
   pages,
-  courses,
-  modules,
-  topics,
   SiteHeader,
   teamMembers,
   activityLogs,
@@ -26,6 +23,15 @@ import {
   blogs,
   blogCategories,
   tags,
+  course_content,
+  course,
+  course_modules,
+  course_topics,
+  course_module_topics_link,
+  type CourseType,
+  type CourseModuleType,
+  type CourseTopicType,
+  type CourseContentType,
   type paymentPagesType,
   type NewUser,
   type NewTeam,
@@ -36,8 +42,6 @@ import {
   type Tenant,
   type PageType,
   type blogsType,
-  type CourseType,
-  type ModulesType,
   type TeamMember,
   type NewPage,
   type blogCategoriesType,
@@ -45,6 +49,7 @@ import {
   ActivityType,
   invitations,
   menus,
+  course_modules_link,
 } from "@/lib/db/schema";
 import { comparePasswords, hashPassword, setSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
@@ -93,6 +98,203 @@ export type SiteDataInput = {
   siteIcon?: File;
   siteHeader: string;
 };
+
+/* Course Save */
+
+export async function saveCourse(siteId: string, courseData: CourseProps) {
+  // Check if a course with the same name already exists
+  const existingCourse = await db
+    .select({ id: course.id })
+    .from(course)
+    .where(and(eq(course.name, courseData.name), eq(course.site_id, siteId)))
+    .limit(1);
+
+  if (existingCourse.length > 0) {
+    throw new Error("A course with this name already exists.");
+  }
+
+  // Save title block
+  const courseContent = await db
+    .insert(course_content)
+    .values({ siteId: siteId, content: courseData.content })
+    .returning()
+    .then((res) => res[0]);
+
+  const titleRecord = await db
+    .insert(course)
+    .values({
+      site_id: siteId,
+      name: courseData.name,
+      content_id: courseContent.id,
+    })
+    .returning()
+    .then((res) => res[0]);
+
+  for (const module of courseData.modules) {
+    const moduleBlock = await db
+      .insert(course_content)
+      .values({ siteId: siteId, content: module.content })
+      .returning()
+      .then((res) => res[0]);
+
+    const moduleRecord = await db
+      .insert(course_modules)
+      .values({
+        site_id: siteId,
+        name: module.name,
+        course_id: titleRecord.id,
+        content_id: moduleBlock.id,
+      })
+      .returning()
+      .then((res) => res[0]);
+
+    // Link module to title
+    await db.insert(course_modules_link).values({
+      course_id: titleRecord.id,
+      site_id: siteId,
+      module_id: moduleRecord.id,
+    });
+
+    for (const topic of module.topics) {
+      const topicBlock = await db
+        .insert(course_content)
+        .values({ siteId: siteId, content: topic.content })
+        .returning()
+        .then((res) => res[0]);
+
+      const topicRecord = await db
+        .insert(course_topics)
+        .values({
+          site_id: siteId,
+          name: topic.name,
+          module_id: moduleRecord.id,
+          content_id: topicBlock.id,
+        })
+        .returning()
+        .then((res) => res[0]);
+
+      // Link topic to module
+      await db.insert(course_module_topics_link).values({
+        module_id: moduleRecord.id,
+        site_id: siteId,
+        topic_id: topicRecord.id,
+      });
+    }
+  }
+
+  return { success: true };
+}
+
+export async function getFullCourse(siteId: string, courseId: string) {
+  // 1. Fetch the title
+  const course_rec = await db
+    .select({
+      id: course.id,
+      name: course.name,
+      content_id: course.content_id,
+      content: course_content.content,
+    })
+    .from(course)
+    .leftJoin(course_content, eq(course.content_id, course_content.id))
+    .where(eq(course.id, course_content.id) && eq(course.site_id, siteId));
+
+  if (!course_rec) return null;
+
+  // 2. Find module links for this title
+  const linkedModules = await db
+    .select({ module_id: course_modules_link.module_id })
+    .from(course_modules_link)
+    .where(eq(course_modules_link.course_id, course_rec[0].id));
+
+  const moduleIds = linkedModules.map((m) => m.module_id);
+  if (moduleIds.length === 0) return { ...course, modules: [] };
+
+  // 3. Get module data and block content
+  const modulesWithBlocks = await db
+    .select({
+      id: course_modules.id,
+      name: course_modules.name,
+      content_id: course_modules.content_id,
+      content: course_content.content,
+    })
+    .from(course_modules)
+    .leftJoin(course_content, eq(course_modules.content_id, course_content.id))
+    .where(
+      and(
+        inArray(
+          course_modules.id,
+          moduleIds.filter((id): id is string => id !== null)
+        ),
+        eq(course_modules.site_id, siteId)
+      )
+    );
+
+  // 4. Get module → topic links
+  const moduleTopicLinks = await db
+    .select()
+    .from(course_module_topics_link)
+    .where(
+      and(
+        inArray(
+          course_module_topics_link.module_id,
+          moduleIds.filter((id): id is string => id !== null)
+        ),
+        eq(course_module_topics_link.site_id, siteId)
+      )
+    );
+
+  const topicIds = moduleTopicLinks.map((link) => link.topic_id);
+
+  // 5. Get topic data and block content
+  const topicsWithBlocks = topicIds.length
+    ? await db
+        .select({
+          id: course_topics.id,
+          name: course_topics.name,
+          blockId: course_topics.content_id,
+          blockContent: course_content.content,
+        })
+        .from(course_topics)
+        .leftJoin(
+          course_content,
+          eq(course_content.id, course_topics.content_id)
+        )
+        .where(
+          and(
+            eq(course_topics.site_id, siteId),
+            inArray(
+              course_topics.id,
+              topicIds.filter((id): id is string => id !== null)
+            )
+          )
+        )
+    : [];
+
+  // 6. Group topics under modules
+  const moduleMap: Record<string, any> = {};
+  for (const module of modulesWithBlocks) {
+    moduleMap[module.id] = { ...module, topics: [] };
+  }
+
+  for (const link of moduleTopicLinks) {
+    const topic = topicsWithBlocks.find((t) => t.id === link.topic_id);
+    if (topic) {
+      if (link.module_id !== null) {
+        moduleMap[link.module_id].topics.push(topic);
+      }
+    }
+  }
+
+  const modulesStructured = Object.values(moduleMap);
+
+  return {
+    id: course.id,
+    name: course.name,
+    content_id: course.content_id,
+
+    modules: modulesStructured,
+  };
+}
 
 // Function to get siteId - a placeholder for your siteId fetch logic
 export async function getSiteId() {
@@ -688,212 +890,102 @@ export async function upsertSiteData(data: FormData) {
 
 export const getCourses = async (siteId: string) => {
   const courseData = await db
-    .select()
-    .from(courses)
-    .where(eq(courses.siteId, siteId));
+    .select({ name: course.name, id: course.id })
+    .from(course)
+    .where(eq(course.site_id, siteId));
   return courseData;
 };
-export async function getCoursebyTitle(
-  siteId: string,
-  courseTitle: string
-): Promise<Course | null> {
+export async function getCoursebyId(siteId: string, courseId: string) {
   try {
-    const courseData = await db
-      .select()
-      .from(courses)
-      .where(and(eq(courses.title, courseTitle), eq(courses.siteId, siteId)));
+    // Fetch the course record
+    const courseRec = await db
+      .select({
+        id: course.id,
+        name: course.name,
+        content_id: course.content_id,
+      })
+      .from(course)
+      .where(and(eq(course.id, courseId), eq(course.site_id, siteId)))
+      .limit(1);
 
-    if (courseData.length === 0) return null;
+    if (courseRec.length === 0) return null;
 
-    const modulesData = await db
-      .select()
-      .from(modules)
-      .where(eq(modules.courseId, courseData[0].id));
+    // Fetch the course content
+    const courseContent = await db
+      .select({ content: course_content.content })
+      .from(course_content)
+      .where(
+        courseRec[0].content_id
+          ? eq(course_content.id, courseRec[0].content_id)
+          : sql`false`
+      )
+      .limit(1);
 
-    if (!Array.isArray(modulesData)) {
-      throw new Error("modulesData should be an array");
-    }
+    const modulesRec = await db
+      .select({
+        id: course_modules.id,
+        name: course_modules.name,
+        content_id: course_modules.content_id,
+        content: course_content.content,
+      })
+      .from(course_modules)
+      .leftJoin(
+        course_content,
+        eq(course_modules.content_id, course_content.id) // Join with course_content using content_id
+      )
+      .where(eq(course_modules.course_id, courseRec[0].id));
 
-    const moduleIds = modulesData.map((module) => module.id);
+    const moduleIds = modulesRec.map((module) => module.id);
 
-    const topicsData =
+    const topicsRec =
       moduleIds.length > 0
         ? await db
-            .select()
-            .from(topics)
-            .where(inArray(topics.moduleId, moduleIds))
+            .select({
+              id: course_topics.id,
+              name: course_topics.name,
+              content_id: course_topics.content_id,
+              content: course_content.content,
+              module_id: course_topics.module_id,
+            })
+            .from(course_topics)
+            .leftJoin(
+              course_content,
+              eq(course_topics.content_id, course_content.id)
+            )
+            .where(inArray(course_topics.module_id, moduleIds))
         : [];
 
-    const course: Course = {
-      id: courseData[0].id,
-      title: courseData[0].title,
-      pageUrl: courseData[0].course_url || "",
-      modules: modulesData.map((module) => ({
+    const courseData: CourseProps = {
+      id: courseRec[0].id,
+      name: courseRec[0].name,
+      content_id: courseRec[0].content_id ?? "",
+      content: courseContent[0]?.content || "",
+      siteId: siteId,
+      modules: modulesRec.map((module) => ({
         id: module.id,
-        name: module.name || null,
-        pageUrl: module.module_url || null,
-        order: module.order,
-        topics: topicsData
-          .filter((topic) => topic.moduleId === module.id)
+        name: module.name || "", // Ensure name is always a string
+        content_id: module.content_id || "", // Ensure content_id is always a string
+        content: module.content_id
+          ? modulesRec.find((c) => c.content_id === module.content_id)
+              ?.content || ""
+          : "",
+        topics: topicsRec
+          .filter((topic) => topic.module_id === module.id)
           .map((topic) => ({
             id: topic.id,
             name: topic.name,
-            pageUrl: topic.topic_url || null,
-            order: topic.order,
-            moduleId: topic.moduleId,
+            content_id: topic.content_id || "", // Ensure content_id is always a string
+            content: topic.content || "",
           })),
       })),
     };
 
-    return course;
+    return courseData;
   } catch (error) {
     console.error(error);
     throw new Error("Failed to retrieve course");
   }
 }
-export const saveCourse = async (siteId: string, course: any) => {
-  try {
-    if (!course.title || !siteId) {
-      throw new Error("Invalid course data");
-    }
-
-    if (course.id) {
-      // Update existing course
-      const updatedCourse = await db
-        .update(courses)
-        .set({
-          siteId: siteId,
-          title: course.title,
-          course_url: course.pageUrl,
-        })
-        .where(eq(courses.id, course.id) && eq(courses.siteId, siteId))
-        .returning();
-
-      if (!updatedCourse.length) {
-        throw new Error("Failed to update course");
-      }
-    } else {
-      // Create new course
-      const [insertedCourse] = await db
-        .insert(courses)
-        .values({
-          siteId: siteId,
-          title: course.title,
-          course_url: course.pageUrl,
-        })
-        .returning();
-      if (!insertedCourse) {
-        throw new Error("Failed to create course");
-      }
-      course.id = insertedCourse.id;
-    }
-
-    // Insert modules and topics
-    for (const module of course.modules) {
-      let insertedModule;
-      if (module.id) {
-        [insertedModule] = await db
-          .update(modules)
-          .set({
-            courseId: course.id,
-            siteId: siteId,
-            name: module.name,
-            order: module.order,
-            module_url: module.pageUrl,
-          })
-          .where(eq(modules.id, module.id))
-          .returning();
-        if (!insertedModule) {
-          throw new Error("Failed to update module");
-        }
-      } else {
-        [insertedModule] = await db
-
-          .insert(modules)
-          .values({
-            courseId: course.id,
-            siteId: siteId,
-            name: module.name,
-            order: module.order,
-            module_url: module.pageUrl,
-          })
-          .returning();
-        if (!insertedModule) {
-          throw new Error("Failed to create module");
-        }
-
-        module.id = insertedModule.id;
-      }
-      // Insert or update topics
-      const existingTopics = await db
-        .select({ id: topics.id })
-        .from(topics)
-        .where(eq(topics.moduleId, module.id));
-
-      const existingTopicIds = existingTopics.map((t) => t.id);
-      const updatedTopicIds: number[] = module.topics
-        .map((t: { id: number }) => t.id)
-        .filter(Boolean);
-
-      // Delete topics that are no longer present
-      const topicsToDelete = existingTopicIds.filter(
-        (id) => !updatedTopicIds.includes(id)
-      );
-      if (topicsToDelete.length > 0) {
-        const deletedTopics = await db
-          .delete(topics)
-          .where(inArray(topics.id, topicsToDelete))
-          .returning();
-
-        if (!deletedTopics.length) {
-          throw new Error("Failed to delete topics");
-        }
-      }
-
-      for (const topic of module.topics) {
-        if (!topic.name || !topic.pageUrl) {
-          throw new Error("Missing required topic information");
-        }
-
-        if (topic.id) {
-          const updatedTopic = await db
-            .update(topics)
-            .set({
-              name: topic.name,
-              order: topic.order,
-              topic_url: topic.pageUrl,
-            })
-            .where(eq(topics.id, topic.id))
-            .returning();
-
-          if (!updatedTopic.length) {
-            throw new Error("Failed to update topic");
-          }
-        } else {
-          const [insertedTopic] = await db
-            .insert(topics)
-            .values({
-              moduleId: module.id,
-              siteId: siteId,
-              name: topic.name,
-              order: topic.order,
-              topic_url: topic.pageUrl,
-            })
-            .returning();
-
-          if (!insertedTopic) {
-            throw new Error("Failed to create topic");
-          }
-
-          topic.id = insertedTopic.id;
-        }
-      }
-    }
-  } catch (error) {
-    console.error(error);
-    throw new Error("Failed to save course");
-  }
-};
 
 export async function addMenu(data: FormData) {
   const siteId = data.get("siteId") as string;
