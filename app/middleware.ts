@@ -10,13 +10,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const origin = url.origin;
   const pathSegments = pathname ? pathname.split("/") : [];
-  const siteId = pathSegments[1] || ""; // Assuming siteId is the second segment
-  const menuItem = pathSegments[2] || ""; // Assuming siteId is the second segment
-  const widgetType = pathSegments[3] || ""; // Assuming widgetType is the third segment
-  const widgetidx = pathSegments[4] || ""; // Assuming widgetidx is the second segment
-  const itemidx = pathSegments[5] || ""; // Assuming itemidx is the second segment
 
-  // Step 1: Add custom headers
+  const siteId = pathSegments[1] || "";
+  const menuItem = pathSegments[2] || "";
+  const widgetType = pathSegments[3] || "";
+  const widgetidx = pathSegments[4] || "";
+  const itemidx = pathSegments[5] || "";
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-url", request.url);
   requestHeaders.set("x-origin", origin);
@@ -25,12 +25,10 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-wtype", widgetType);
   requestHeaders.set("x-widx", widgetidx);
   requestHeaders.set("x-itemidx", itemidx);
-  console.log("in middleware");
 
   const sessionCookie = request.cookies.get("session");
   const isProtectedRoute = pathname.startsWith(`/${siteId}/${protectedRoutes}`);
 
-  // Step 2: Handle protected routes and session validation
   if (isProtectedRoute && !sessionCookie) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
@@ -41,11 +39,7 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Step 3: Update session token if it exists
-  /*
   if (sessionCookie) {
-    console.log(request.nextUrl.pathname);
-    console.log("sessionCookie", sessionCookie);
     try {
       const parsed = await verifyToken(sessionCookie.value);
       const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -69,19 +63,14 @@ export async function middleware(request: NextRequest) {
       }
     }
   }
-  */
 
   const hostname = request.headers.get("host") || "";
-
   const subdomain =
     process.env.NODE_ENV === "development"
       ? hostname.replace(".lvh.me:3000", "")
       : hostname.replace(".reachu.org", "");
-  console.log("subdomain", subdomain);
 
-  console.log("hostname", hostname);
-
-  // Skip root domain (e.g., www or no subdomain)
+  // Skip rewrite for root domain
   if (
     subdomain === "www" ||
     subdomain === "localhost" ||
@@ -90,26 +79,26 @@ export async function middleware(request: NextRequest) {
     subdomain === "lvh.me:3000" ||
     subdomain === "localhost:3000"
   ) {
-    console.log("skipping root domain");
     return NextResponse.next();
   }
 
-  // Rewrite URL from `/admin` → `/{subdomain}/admin`
-  console.log("pathname", pathname);
-
-  //return response;
   // Skip rewrite for known public routes
-  const isPublicPath = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+  // Public paths that should never be rewritten (like /signup)
+  const PUBLIC_PATHS = ["/sign-up", "/sign-in", "/login"];
+  const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  console.log("isPublicPath", isPublicPath);
+  console.log("pathname", pathname);
+  if (isPublicPath) {
+    return NextResponse.next();
+  }
 
-  if (pathname !== "/" && !isPublicPath) {
+  // Rewrite from /admin → /[subdomain]/admin
+  if (pathname !== "/") {
     url.pathname = `/${subdomain}${pathname}`;
     return NextResponse.rewrite(url);
-  } else {
-    return NextResponse.next();
   }
 }
 
 export const config = {
-  // Match all routes except API, static assets, and favicon
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

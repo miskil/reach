@@ -42,10 +42,7 @@ export async function middleware(request: NextRequest) {
   });
 
   // Step 3: Update session token if it exists
-  /*
   if (sessionCookie) {
-    console.log(request.nextUrl.pathname);
-    console.log("sessionCookie", sessionCookie);
     try {
       const parsed = await verifyToken(sessionCookie.value);
       const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -69,8 +66,6 @@ export async function middleware(request: NextRequest) {
       }
     }
   }
-  */
-
   const hostname = request.headers.get("host") || "";
 
   const subdomain =

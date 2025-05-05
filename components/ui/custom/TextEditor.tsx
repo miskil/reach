@@ -1,7 +1,11 @@
 "use client";
 import { useState, useRef, useMemo, useEffect } from "react";
-import JoditEditor from "jodit-react";
 import { useUser } from "@/lib/auth";
+import dynamic from "next/dynamic";
+const ReactQuill: any = dynamic(() => import("react-quill-new"), {
+  ssr: false,
+});
+import "react-quill-new/dist/quill.snow.css";
 
 interface TextEditorProps {
   siteId: string;
@@ -25,22 +29,18 @@ const TextEditor: React.FC<TextEditorProps> = ({
     setContent(initialContent);
   }, [initialContent]);
 
-  const config = useMemo(
-    //  Using of useMemo while make custom configuration is strictly recomended
-    () => ({
-      //  if you don't use it the editor will lose focus every time when you make any change to the editor, even an addition of one character
-      /* Custom image uploader button configuretion to accept image and convert it to base64 format */
-
-      readonly: !modifyMode,
-      placeholder: "Type here...",
-
-      uploader: {
-        insertImageAsBase64URI: true,
-        imagesExtensions: ["jpg", "png", "jpeg", "gif", "svg", "webp"], // this line is not much important , use if you only strictly want to allow some specific image format
-      },
-    }),
-    [modifyMode]
-  );
+  /* ─────────────── quill toolbar ─────────────── */
+  const modules = {
+    toolbar: [
+      [{ header: "1" }, { header: "2" }, { font: [] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["bold", "italic", "underline", "strike"],
+      [{ align: [] }],
+      ["link", "blockquote", "code-block"],
+      [{ color: ["#f00", "#0f0", "#00f", "#ff0"] }, { background: [] }],
+      ["image"],
+    ],
+  };
 
   const handleUpdate = (newContent: string) => {
     setContent(newContent);
@@ -51,12 +51,11 @@ const TextEditor: React.FC<TextEditorProps> = ({
     // Adjust the styles as necessary
     <div>
       {modifyMode ? (
-        <JoditEditor
-          ref={editor}
+        <ReactQuill
           value={content}
-          config={config}
-          onBlur={handleUpdate} // Save content on blur
-          onChange={(newContent) => handleUpdate(newContent)}
+          onChange={(html: string) => handleUpdate(html)}
+          modules={modules}
+          readOnly={!modifyMode}
         />
       ) : (
         <div dangerouslySetInnerHTML={{ __html: content }}></div>

@@ -3,11 +3,12 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { useState, useEffect, useRef, useMemo } from "react";
+import dynamic from "next/dynamic";
 
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import clsx from "clsx";
-import JoditEditor from "jodit-react";
+
 import { upsertSiteData } from "@/lib/actions";
 import AdminBar from "./AdminBar";
 
@@ -25,6 +26,11 @@ import { useRouter, usePathname } from "next/navigation";
 import { SiteHeader as SiteHeaderType } from "@/lib/db/schema";
 import { getUser } from "@/lib/db/queries";
 
+const ReactQuill: any = dynamic(() => import("react-quill-new"), {
+  ssr: false,
+});
+import "react-quill-new/dist/quill.snow.css";
+
 type SiteHeaderProps = {
   siteid: string;
   headerdata: SiteHeaderType;
@@ -36,9 +42,25 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
 
   const { user, setUser, modifyMode, setModifyMode, adminMode, setAdminMode } =
     useUser();
-  if (user) {
-    setAdminMode(true);
-  }
+
+  /* ─────────────── quill toolbar ─────────────── */
+  const modules = {
+    toolbar: [
+      [{ header: "1" }, { header: "2" }, { font: [] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["bold", "italic", "underline", "strike"],
+      [{ align: [] }],
+      ["link", "blockquote", "code-block"],
+      [{ color: ["#f00", "#0f0", "#00f", "#ff0"] }, { background: [] }],
+      ["image"],
+    ],
+  };
+
+  useEffect(() => {
+    if (user) {
+      setAdminMode(true);
+    }
+  }, [user]);
 
   console.log("user in SiteHeaderUI", user);
   const [preview, setpreview] = useState(false);
@@ -60,51 +82,6 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
     setContent(headerdata?.siteHeader!);
     setSiteIcon(headerdata?.siteiconURL!);
   }, [headerdata]);
-
-  const config = useMemo(
-    //  Using of useMemo while make custom configuration is strictly recomended
-    () => ({
-      //  if you don't use it the editor will lose focus every time when you make any change to the editor, even an addition of one character
-      /* Custom image uploader button configuretion to accept image and convert it to base64 format */
-
-      readonly: !modifyMode,
-      placeholder: "Type here...",
-      toolbarAdaptive: false,
-      removeButtons: [
-        "underline",
-        "superscript",
-        "subscript",
-        "strikethrough",
-        "align",
-        "|",
-        "ul",
-        "ol",
-        "|",
-        "indent",
-        "outdent",
-        "file",
-        "table",
-        "fullsize",
-        "preview",
-        "print",
-        "about",
-        "hr",
-        "symbol",
-        "find",
-        "copyformat",
-        "selectall",
-        "cutselection",
-        "delete",
-        "ClassName",
-      ],
-
-      uploader: {
-        insertImageAsBase64URI: true,
-        imagesExtensions: ["jpg", "png", "jpeg", "gif", "svg", "webp"], // this line is not much important , use if you only strictly want to allow some specific image format
-      },
-    }),
-    [modifyMode]
-  );
 
   useUnsavedChanges(isDirty);
   async function handleSave() {
@@ -167,12 +144,12 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
 
           <div>
             {modifyMode ? (
-              <JoditEditor
-                ref={editor}
+              <ReactQuill
                 value={content}
-                config={config}
-                onBlur={handleUpdate} // Save content on blur
-                onChange={(newContent) => handleUpdate(newContent)}
+                onChange={(html: string) => handleUpdate(html)}
+                modules={modules}
+                readOnly={!modifyMode}
+                className="h-20 max-h-40 overflow-y-auto"
               />
             ) : (
               <div dangerouslySetInnerHTML={{ __html: content }}></div>

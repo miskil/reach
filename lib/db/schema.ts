@@ -156,6 +156,36 @@ export const course_module_topics_link = pgTable("course_module_topics_link", {
   site_id: varchar("site_id").references(() => tenants.tenant),
   topic_id: uuid("topic_id").references(() => course_topics.id),
 });
+
+// db/schema/members.ts
+
+export const members = pgTable("members", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  site_id: varchar("site_id").references(() => tenants.tenant),
+  email: text("email").notNull(),
+  accessLevel: text("access_level").notNull(), // 'admin' | 'editor' | 'viewer'
+  invitedBy: varchar("invitedBy", { length: 255 })
+    .notNull()
+    .references(() => users.email),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// db/schema/invites.ts
+export const invites = pgTable("invites", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  site_id: varchar("site_id").references(() => tenants.tenant),
+  email: text("email").notNull(),
+  accessLevel: text("access_level").notNull(), // 'admin' | 'editor' | 'viewer'
+
+  token: text("token").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending' | 'accepted' | 'declined'
+  invitedBy: varchar("invitedBy", { length: 255 })
+    .notNull()
+    .references(() => users.email),
+
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 export const paymentPages = pgTable("payment_pages", {
   id: serial("id").primaryKey(),
   siteId: varchar("siteId").references(() => tenants.tenant),
@@ -207,9 +237,7 @@ export const teamMembers = pgTable("team_members", {
 
 export const activityLogs = pgTable("activity_logs", {
   id: serial("id").primaryKey(),
-  teamId: integer("team_id")
-    .notNull()
-    .references(() => teams.id),
+
   userId: integer("user_id").references(() => users.id),
   action: text("action").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
@@ -260,17 +288,6 @@ export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
   team: one(teams, {
     fields: [teamMembers.teamId],
     references: [teams.id],
-  }),
-}));
-
-export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
-  team: one(teams, {
-    fields: [activityLogs.teamId],
-    references: [teams.id],
-  }),
-  user: one(users, {
-    fields: [activityLogs.userId],
-    references: [users.id],
   }),
 }));
 

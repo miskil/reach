@@ -38,8 +38,9 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
   const ManagePagePath = subdomainURL(siteid, "admin/managepage");
   const ManageCoursePath = subdomainURL(siteid, "admin/managecourse");
   const ManageBlogsPath = subdomainURL(siteid, "admin/manageblogs");
-
+  const InviteMemberPath = subdomainURL(siteid, "admin/members/invite");
   const Base = `${process.env.NEXT_PUBLIC_BASE_URL}/${siteid}`;
+  const BaseURL = `${process.env.NEXT_PUBLIC_BASE_URL}`;
 
   const handleAdminClick = () => {
     setAdminMode(!adminMode);
@@ -58,6 +59,12 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
     router.refresh;
     router.push(ManageBlogsPath);
   };
+  const handleInviteMemberClick = () => {
+    setAdminMode(!adminMode);
+    setShowModifySwitch(true);
+    router.refresh;
+    router.push(InviteMemberPath);
+  };
   const handleManageCourseClick = () => {
     setAdminMode(!adminMode);
     router.refresh;
@@ -66,7 +73,7 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
   async function handleSignOut() {
     setUser(null);
     await signOut();
-    router.push("/");
+    router.push(BaseURL);
   }
 
   return (
@@ -122,6 +129,14 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
               >
                 <Home className="mr-2 h-4 w-4" />
                 <span>Manage Course</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                onClick={handleInviteMemberClick}
+              >
+                <Home className="mr-2 h-4 w-4" />
+                <span>Invite Member</span>
               </DropdownMenuItem>
               <form action={handleSignOut} className="w-full">
                 <button type="submit" className="flex w-full">
