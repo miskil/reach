@@ -14,7 +14,7 @@ export async function sendInviteEmail(
   console.log("siteId", siteId);
   console.log("token", token);
   await resend.emails.send({
-    from: "noreply@yourdomain.com",
+    from: "noreply@reachu.org",
     to: email,
     subject: "You're invited!",
     html: `<p>You have been invited to join the site ${siteId}.</p><p><a href="${inviteUrl}">Click here to accept your invite</a></p>`,
