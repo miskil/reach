@@ -1375,7 +1375,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
       await db
         .update(invites)
         .set({ status: "accepted" })
-        .where(eq(invites.id, invite!.id));
+        .where(eq(invites.token, invite!.id));
       await logActivity(existingUser.id, ActivityType.ACCEPT_INVITATION);
 
       return { success: "Invite accepted. You can now sign in." };
@@ -1405,7 +1405,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
       await db
         .update(invites)
         .set({ status: "accepted" })
-        .where(eq(invites.id, invite!.id));
+        .where(eq(invites.token, invite!.id));
     }
   } else {
   }
