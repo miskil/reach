@@ -110,7 +110,107 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
     .limit(1);
 
   if (existingCourse.length > 0) {
-    throw new Error("A course with this name already exists.");
+    // Update the existing course
+    const courseId = existingCourse[0].id;
+
+    // Update course content
+    await db
+      .update(course_content)
+      .set({ content: courseData.content })
+      .where(eq(course_content.id, courseData.content_id));
+
+    // Update course name
+    await db
+      .update(course)
+      .set({ name: courseData.name })
+      .where(eq(course.id, courseId));
+
+    // Update or insert modules
+    for (const module of courseData.modules) {
+      if (module.id) {
+        // Update existing module
+        await db
+          .update(course_modules)
+          .set({ name: module.name })
+          .where(eq(course_modules.id, module.id));
+
+        // Update module content
+        await db
+          .update(course_content)
+          .set({ content: module.content })
+          .where(eq(course_content.id, module.content_id));
+      } else {
+        // Insert new module
+        const moduleBlock = await db
+          .insert(course_content)
+          .values({ siteId: siteId, content: module.content })
+          .returning()
+          .then((res) => res[0]);
+
+        const moduleRecord = await db
+          .insert(course_modules)
+          .values({
+            site_id: siteId,
+            name: module.name,
+            course_id: courseId,
+            content_id: moduleBlock.id,
+          })
+          .returning()
+          .then((res) => res[0]);
+
+        // Link module to course
+        await db.insert(course_modules_link).values({
+          course_id: courseId,
+          site_id: siteId,
+          module_id: moduleRecord.id,
+        });
+
+        module.id = moduleRecord.id; // Update module ID for topics
+      }
+
+      // Update or insert topics
+      for (const topic of module.topics) {
+        if (topic.id) {
+          // Update existing topic
+          await db
+            .update(course_topics)
+            .set({ name: topic.name })
+            .where(eq(course_topics.id, topic.id));
+
+          // Update topic content
+          await db
+            .update(course_content)
+            .set({ content: topic.content })
+            .where(eq(course_content.id, topic.content_id));
+        } else {
+          // Insert new topic
+          const topicBlock = await db
+            .insert(course_content)
+            .values({ siteId: siteId, content: topic.content })
+            .returning()
+            .then((res) => res[0]);
+
+          const topicRecord = await db
+            .insert(course_topics)
+            .values({
+              site_id: siteId,
+              name: topic.name,
+              module_id: module.id,
+              content_id: topicBlock.id,
+            })
+            .returning()
+            .then((res) => res[0]);
+
+          // Link topic to module
+          await db.insert(course_module_topics_link).values({
+            module_id: module.id,
+            site_id: siteId,
+            topic_id: topicRecord.id,
+          });
+        }
+      }
+    }
+    return { success: true };
   }
 
   // Save title block

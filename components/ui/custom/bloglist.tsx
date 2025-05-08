@@ -20,7 +20,7 @@ const BlogList: React.FC<BlogListProps> = ({
   const router = useRouter();
 
   const handleCreateBlog = () => {
-    router.push(`admin/manageblogs/BlogCreate`);
+    router.push(`manageblogs/BlogCreate`);
   };
 
   return (
