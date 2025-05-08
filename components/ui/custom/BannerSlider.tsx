@@ -77,7 +77,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({
         <img
           src={localImages[currentIndex].url}
           alt={`Slide ${currentIndex}`}
-          className="w-full h-full object-cover"
+          className="w-full  h-auto max-h-[400px] object-cover"
         />
       )}
       <div className="absolute top-1/2 left-0 transform -translate-y-1/2">
