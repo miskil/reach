@@ -30,17 +30,15 @@ const TextEditor: React.FC<TextEditorProps> = ({
   }, [initialContent]);
 
   /* ─────────────── quill toolbar ─────────────── */
-  const modules = {
-    toolbar: [
-      [{ header: "1" }, { header: "2" }, { font: [] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["bold", "italic", "underline", "strike"],
-      [{ align: [] }],
-      ["link", "blockquote", "code-block"],
-      [{ color: ["#f00", "#0f0", "#00f", "#ff0"] }, { background: [] }],
-      ["image"],
-    ],
-  };
+  const editorId = `editor-${siteId}-text`;
+  const modules = useMemo(
+    () => ({
+      toolbar: {
+        container: `#${editorId}-toolbar`,
+      },
+    }),
+    [editorId]
+  );
 
   const handleUpdate = (newContent: string) => {
     setContent(newContent);
@@ -51,12 +49,50 @@ const TextEditor: React.FC<TextEditorProps> = ({
     // Adjust the styles as necessary
     <div>
       {modifyMode ? (
-        <ReactQuill
-          value={content}
-          onChange={(html: string) => handleUpdate(html)}
-          modules={modules}
-          readOnly={!modifyMode}
-        />
+        <>
+          <div id={`${editorId}-toolbar`}>
+            <span className="ql-formats">
+              <select className="ql-header">
+                <option value="1"></option>
+                <option value="2"></option>
+                <option></option>
+              </select>
+              <select className="ql-font"></select>
+            </span>
+            <span className="ql-formats">
+              <button className="ql-bold"></button>
+              <button className="ql-italic"></button>
+              <button className="ql-underline"></button>
+              <button className="ql-strike"></button>
+            </span>
+            <span className="ql-formats">
+              <select className="ql-align"></select>
+            </span>
+            <span className="ql-formats">
+              <button className="ql-list" value="ordered"></button>
+              <button className="ql-list" value="bullet"></button>
+            </span>
+            <span className="ql-formats">
+              <button className="ql-link"></button>
+              <button className="ql-blockquote"></button>
+              <button className="ql-code-block"></button>
+            </span>
+            <span className="ql-formats">
+              <select className="ql-color"></select>
+              <select className="ql-background"></select>
+            </span>
+            <span className="ql-formats">
+              <button className="ql-image"></button>
+            </span>
+          </div>
+
+          <ReactQuill
+            value={content}
+            onChange={(html: string) => handleUpdate(html)}
+            modules={modules}
+            readOnly={!modifyMode}
+          />
+        </>
       ) : (
         <div dangerouslySetInnerHTML={{ __html: content }}></div>
       )}

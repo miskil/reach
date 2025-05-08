@@ -44,31 +44,36 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
 
   const handleAdminClick = () => {
     setAdminMode(!adminMode);
-    router.refresh;
+
     router.push(adminPath);
+    router.refresh;
   };
   const handleManagePageClick = () => {
     setAdminMode(!adminMode);
     setShowModifySwitch(true);
-    router.refresh;
+
     router.push(ManagePagePath);
+    router.refresh;
   };
   const handleManageBlogsClick = () => {
     setAdminMode(!adminMode);
     setShowModifySwitch(true);
-    router.refresh;
+
     router.push(ManageBlogsPath);
+    router.refresh;
   };
   const handleInviteMemberClick = () => {
     setAdminMode(!adminMode);
     setShowModifySwitch(true);
-    router.refresh;
+
     router.push(InviteMemberPath);
+    router.refresh;
   };
   const handleManageCourseClick = () => {
     setAdminMode(!adminMode);
-    router.refresh;
+    setShowModifySwitch(true);
     router.push(ManageCoursePath);
+    router.refresh;
   };
   async function handleSignOut() {
     setUser(null);

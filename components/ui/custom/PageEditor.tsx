@@ -37,6 +37,27 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
         currentPage.menuItem!,
         currentPage.content
       );
+
+      let updatedContent: ContentType;
+      try {
+        updatedContent =
+          typeof currentPage.content === "string"
+            ? JSON.parse(currentPage.content)
+            : currentPage.content;
+      } catch (error) {
+        console.error("Failed to parse content after save:", error);
+        return;
+      }
+
+      setCurrentPage((prev) =>
+        prev
+          ? {
+              ...prev,
+              content: updatedContent,
+            }
+          : null
+      );
+      /*
       setCurrentPage((prev) =>
         prev
           ? {
@@ -48,9 +69,12 @@ const PageEditor: React.FC<PageEditorProps> = ({ page, siteId }) => {
             }
           : null
       );
+      */
+      console.log("currentPage", currentPage);
       setIsDirty(false);
 
       alert("Page saved!");
+      router.refresh();
     }
   };
   /*
