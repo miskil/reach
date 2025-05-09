@@ -15,8 +15,8 @@ type UserContextType = {
   setUser: (user: User | null) => void;
   adminMode: boolean;
   setAdminMode: (mode: boolean) => void;
-  modifyMode?: boolean;
-  setModifyMode?: (mode: boolean) => void;
+  modifyMode: boolean;
+  setModifyMode: (mode: boolean) => void;
 };
 
 const UserContext = createContext<UserContextType | null>(null);

@@ -61,14 +61,16 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
     router.refresh;
   };
   const handleManagePageClick = () => {
-    setAdminMode(!adminMode);
+    setAdminMode(true);
+    setModifyMode(true);
     setShowModifySwitch(true);
 
     router.push(ManagePagePath);
     router.refresh;
   };
   const handleManageBlogsClick = () => {
-    setAdminMode(!adminMode);
+    setAdminMode(true);
+    setModifyMode(true);
     setShowModifySwitch(true);
 
     router.push(ManageBlogsPath);
@@ -82,11 +84,12 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
     router.refresh;
   };
   const handleManageCourseClick = () => {
-    setAdminMode(!adminMode);
+    setAdminMode(true);
     setShowModifySwitch(true);
     router.push(ManageCoursePath);
     router.refresh;
   };
+
   async function handleSignOut() {
     setUser(null);
     await signOut();

@@ -100,12 +100,19 @@ export async function middleware(request: NextRequest) {
   //return response;
   // Skip rewrite for known public routes
   const isPublicPath = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
-
+  /*
   if (pathname !== "/" && !isPublicPath) {
     url.pathname = `/${subdomain}${pathname}`;
     return NextResponse.rewrite(url);
   } else {
     return NextResponse.next();
+  }
+  */
+
+  if (!isPublicPath) {
+    url.pathname =
+      pathname === "/" ? `/${subdomain}` : `/${subdomain}${pathname}`;
+    return NextResponse.rewrite(url);
   }
 }
 
