@@ -48,7 +48,7 @@ const PageList: React.FC<PageListProps> = ({
         {pages.map((page) => (
           <li
             key={page.name}
-            className="flex justify-between items-center p-4 border rounded"
+            className="flex justify-between items-center  border-b border-gray-300"
           >
             <Link
               href={`/pages/${page.name}`}

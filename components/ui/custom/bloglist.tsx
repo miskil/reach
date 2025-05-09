@@ -4,6 +4,7 @@ import { useState } from "react";
 import { blogsType } from "@/lib/db/schema";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/auth";
+import Link from "next/link";
 
 interface BlogListProps {
   siteId: string;
@@ -44,9 +45,14 @@ const BlogList: React.FC<BlogListProps> = ({
         {Blogs.map((Blog) => (
           <li
             key={Blog.name}
-            className="flex justify-between items-center p-4 border rounded"
+            className="flex justify-between items-center  border-b border-gray-300"
           >
-            <span>{Blog.name}</span>
+            <span
+              className="cursor-pointer text-blue-500 hover:underline"
+              onClick={() => router.push(`/blogs/${Blog.name}`)}
+            >
+              {Blog.name}
+            </span>
             {adminMode && (
               <button
                 onClick={() =>

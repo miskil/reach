@@ -94,7 +94,10 @@ const TextEditor: React.FC<TextEditorProps> = ({
           />
         </>
       ) : (
-        <div dangerouslySetInnerHTML={{ __html: content }}></div>
+        <div
+          className="p-0 m-0 border-0"
+          dangerouslySetInnerHTML={{ __html: content }}
+        ></div>
       )}
     </div>
   );

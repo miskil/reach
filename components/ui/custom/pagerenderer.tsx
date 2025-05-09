@@ -214,7 +214,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
       )}
       {Array.isArray(components) &&
         components.map((component, index) => (
-          <div key={component.id} className="pt-8 relative mb-4">
+          <div key={component.id} className="pt-4 relative mb-4">
             {renderComponent(component, index)}
             {modifyMode && (
               <div>
