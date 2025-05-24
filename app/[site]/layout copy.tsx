@@ -19,17 +19,11 @@ export default async function SlugLayout({ children, params }: LayoutProps) {
   const menus = await getMenuItems(site!);
 
   return (
-    <section className="flex flex-col min-h-screen w-full">
-      {/* Header should have explicit height or grow as needed */}
-      <div className="flex-shrink-0">
-        <SiteHeader siteid={site!} HeaderUI={SiteHeaderUI} />
-      </div>
-      <div className="flex-shrink-0">
-        <SiteMenus siteid={site!} menusdata={menus} />
-      </div>
-
-      {/* Content fills remaining height */}
-      <main className="flex-1 w-full overflow-auto">{children}</main>
+    <section className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
+      <SiteHeader siteid={site!} HeaderUI={SiteHeaderUI} />
+      <SiteMenus siteid={site!} menusdata={menus} />
+      {/*<Header />*/}
+      {children}
     </section>
   );
 }

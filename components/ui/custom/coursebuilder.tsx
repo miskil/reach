@@ -8,13 +8,15 @@ import { Plus, Eye, Copy, Clipboard, Menu } from "lucide-react";
 import { CourseProps } from "@/lib/types";
 import { saveCourse } from "@/lib/actions";
 import { useUser } from "@/lib/auth";
-import quillModules from "@/lib/quillConfig"; // Assuming you have a quillModules file for the toolbar configuration
+import RichEditor from "./richEditor";
+import RichTextPreview from "./RichTextPreview";
+/*import quillModules from "@/lib/quillConfig"; // Assuming you have a quillModules file for the toolbar configuration
 
-const ReactQuill: any = dynamic(() => import("react-quill-new"), {
+//const ReactQuill: any = dynamic(() => import("react-quill-new"), {
   ssr: false,
 });
 import "react-quill-new/dist/quill.snow.css";
-
+*/
 export default function CourseBuilder({
   siteId,
   mode = "admin",
@@ -108,53 +110,13 @@ export default function CourseBuilder({
       <h2 className="text-lg font-semibold mb-2">{name}</h2>
 
       {modifyMode ? (
-        <>
-          <div id={`${courseEditorId}-toolbar`}>
-            <span className="ql-formats">
-              <select className="ql-header">
-                <option value="1"></option>
-                <option value="2"></option>
-                <option></option>
-              </select>
-              <select className="ql-font"></select>
-            </span>
-            <span className="ql-formats">
-              <button className="ql-bold"></button>
-              <button className="ql-italic"></button>
-              <button className="ql-underline"></button>
-              <button className="ql-strike"></button>
-            </span>
-            <span className="ql-formats">
-              <select className="ql-align"></select>
-            </span>
-            <span className="ql-formats">
-              <button className="ql-list" value="ordered"></button>
-              <button className="ql-list" value="bullet"></button>
-            </span>
-            <span className="ql-formats">
-              <button className="ql-link"></button>
-              <button className="ql-blockquote"></button>
-              <button className="ql-code-block"></button>
-            </span>
-            <span className="ql-formats">
-              <select className="ql-color"></select>
-              <select className="ql-background"></select>
-            </span>
-            <span className="ql-formats">
-              <button className="ql-image"></button>
-            </span>
-          </div>
-          <ReactQuill
-            key={blockId} // remount per block
-            value={getBlockContent(blockId)}
-            onChange={(html: string) => updateBlockContent(blockId, html)}
-            modules={modifyMode ? modules : null}
-            readOnly={mode === "normal"}
-            className="h-80"
-          />
-        </>
+        <RichEditor
+          id={blockId} // remount per block
+          initialContent={getBlockContent(blockId)}
+          onChange={(html: string) => updateBlockContent(blockId, html)}
+        />
       ) : (
-        <div dangerouslySetInnerHTML={{ __html: getBlockContent(blockId) }} />
+        <RichTextPreview html={getBlockContent(blockId)} />
       )}
     </div>
   );
@@ -169,6 +131,10 @@ export default function CourseBuilder({
           name: "New Module",
           content_id: `module-content-${Date.now()}`,
           content: "",
+          contentStyle: {},
+          bkgImageFile: null,
+          width: "100%",
+          height: "100%",
           topics: [],
         },
       ],
@@ -188,6 +154,10 @@ export default function CourseBuilder({
                   name: "New Topic",
                   content_id: `topic-content-${Date.now()}`,
                   content: "",
+                  contentStyle: {},
+                  bkgImageFile: null,
+                  width: "100%",
+                  height: "100%",
                 },
               ],
             }

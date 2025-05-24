@@ -25,6 +25,8 @@ export default async function CurrentCourse(props: Props) {
           name: "Example Course", // Ensure this is properly initialized
           content_id: `course-${Date.now()}`,
           content: "Course content",
+          contentStyle: {},
+
           modules: [],
         }}
       />

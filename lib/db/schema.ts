@@ -87,11 +87,8 @@ export const siteheader = pgTable("siteheader", {
   id: serial("id").primaryKey(),
   siteId: varchar("siteId").references(() => tenants.tenant),
   siteiconURL: varchar("siteiconURL", { length: 400 }),
-  siteHeader: varchar("siteHeader", { length: 400 }),
-  headerTextColor: varchar("headertextcolor", { length: 12 }),
-  headerFontSize: varchar("headerfontsize", { length: 12 }),
-  headerBkgColor: varchar("headerbkgcolor", { length: 12 }),
-  headerBkgImageURL: varchar("headerbkgimageURL", { length: 400 }),
+  content: jsonb("content").notNull(), // Stores layout-specific content as JSON
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

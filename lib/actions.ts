@@ -6,6 +6,8 @@ import { db } from "@/lib/db/drizzle";
 import { CourseProps } from "../lib/types";
 import fs from "fs";
 import path from "path";
+import { TextContent } from "@/lib/types";
+
 import { sendInviteEmail } from "./email";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
@@ -431,7 +433,7 @@ export async function updateSiteParameters(data: FormData) {
   // Update the database
   await db
     .update(siteheader)
-    .set({ siteHeader, siteiconURL: filePath })
+    .set({ content: siteHeader, siteiconURL: filePath })
     .where(eq(siteheader.siteId, siteId));
 
   // Revalidate the page to show updates
@@ -911,17 +913,10 @@ export async function deleteS3Image(siteId: string, imagePath: string) {
 
 export async function upsertSiteData(data: FormData) {
   const siteId = data.get("siteId") as string | null;
-  const siteHeader = data.get("siteHeader") as string | null;
+  const siteHeader = JSON.parse(
+    data.get("siteHeader") as string
+  ) as TextContent; // Cast to TextContent
   const siteIcon = data.get("siteIcon") as File | null;
-  const headerTextColor = data.get("headerTextColor") as string | null;
-  const headerFontSize = data.get("headerFontSize") as string | null;
-  const headerBkgColor = data.get("headerBkgColor") as string | null;
-  const headerBkgImage = data.get("headerBkgImage") as File | null;
-  const existingiconURL = data.get("existingiconURL") as string | null;
-  const existingbgImageURL = data.get("existingbgImageURL") as string | null;
-
-  existingiconURL;
-  existingbgImageURL;
 
   if (!siteId || !siteHeader) {
     return { error: "Missing required fields" };
@@ -939,22 +934,24 @@ export async function upsertSiteData(data: FormData) {
     }
   }
 
-  if (headerBkgImage) {
+  if (siteHeader.bkgImageFile) {
     try {
-      bkgImagePath = (await uploadImage(siteId, headerBkgImage)) || "";
+      bkgImagePath = (await uploadImage(siteId, siteHeader.bkgImageFile)) || "";
     } catch (error) {
       console.error("Image Upload Error:", error);
       return { error: "Failed to upload site icon" };
     }
   }
 
+  siteHeader.contentStyle = {
+    ...siteHeader.contentStyle, // Retain existing properties
+    backgroundImage: `url(${bkgImagePath})`, // Add or update backgroundImage
+    backgroundSize: "cover", // Optionally add or update backgroundSize
+  };
+
   const updateData = {
     siteiconURL: siteIconPath,
-    siteHeader,
-    headerTextColor,
-    headerFontSize,
-    headerBkgColor,
-    headerBkgImageURL: bkgImagePath,
+    content: siteHeader || "",
   };
 
   Object.keys(updateData).forEach((key) => {
@@ -1061,6 +1058,7 @@ export async function getCoursebyId(siteId: string, courseId: string) {
       content_id: courseRec[0].content_id ?? "",
       content: courseContent[0]?.content || "",
       siteId: siteId,
+      contentStyle: {}, // Add a default or appropriate value for contentStyle
       modules: modulesRec.map((module) => ({
         id: module.id,
         name: module.name || "", // Ensure name is always a string
@@ -1069,6 +1067,10 @@ export async function getCoursebyId(siteId: string, courseId: string) {
           ? modulesRec.find((c) => c.content_id === module.content_id)
               ?.content || ""
           : "",
+        contentStyle: {}, // Provide a default empty object or set as needed
+        bkgImageFile: null, // Optional, set as needed
+        width: undefined, // Optional, set as needed
+        height: undefined, // Optional, set as needed
         topics: topicsRec
           .filter((topic) => topic.module_id === module.id)
           .map((topic) => ({
@@ -1076,6 +1078,10 @@ export async function getCoursebyId(siteId: string, courseId: string) {
             name: topic.name,
             content_id: topic.content_id || "", // Ensure content_id is always a string
             content: topic.content || "",
+            contentStyle: {}, // Provide a default empty object or set as needed
+            bkgImageFile: null, // Optional, set as needed
+            width: undefined, // Optional, set as needed
+            height: undefined, // Optional, set as needed
           })),
       })),
     };

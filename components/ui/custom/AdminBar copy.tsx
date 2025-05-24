@@ -108,9 +108,9 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
   };
 
   return (
-    <div className="w-full bg-black text-white px-4 py-1 flex flex-col md:flex-row md:items-center h-auto md:h-10 min-h-[2.5rem]">
+    <div className=" w-full bg-black text-white p-4 py-1 flex flex-col md:flex-row h-10 ">
       {/* Left-side menu */}
-      <div className="flex flex-wrap md:flex-nowrap items-center gap-4">
+      <div className="flex flex-row flex-wrap md:flex-nowrap p-4 space-x-4">
         <button
           onClick={handlePageClick}
           className={`flex items-center space-x-2 text-sm font-semibold hover:text-gray-300 ${
@@ -131,18 +131,18 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
         </button>
         <button
           onClick={handleCourseClick}
-          className="flex items-center space-x-2 text-sm font-semibold hover:text-gray-300"
+          className="flex items-center space-x-2 text-sm font-semibold hover:text-gray-300 "
         >
           <PanelsTopLeft className="h-4 w-4" />
           <span>Courses</span>
         </button>
       </div>
-
       {/* Right-side controls */}
-      <div className="flex md:ml-auto flex-row items-center gap-4 mt-2 md:mt-0">
+      <div className="flex-1 flex flex-row justify-end items-center p-4 space-x-4">
         {showModifySwitch && isAdminPath && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center space-x-4">
             <span className="text-sm font-semibold">Modify</span>
+
             <Switch.Root
               className="w-12 h-6 bg-gray-400 rounded-full relative data-[state=checked]:bg-green-500 transition"
               checked={modifyMode}
@@ -152,59 +152,65 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
             </Switch.Root>
           </div>
         )}
-        {user && (
-          <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <Avatar className="cursor-pointer size-9">
-                <AvatarImage alt={user.name || ""} />
-                <AvatarFallback className="text-black">
-                  {user.email
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="flex flex-col gap-1">
-              <DropdownMenuItem
-                className={`cursor-pointer ${adminMode ? "font-bold" : ""}`}
-                onClick={handleManagePageClick}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                <span>Manage Page</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className={`cursor-pointer ${adminMode ? "font-bold" : ""}`}
-                onClick={handleManageBlogsClick}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                <span>Manage Blogs</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className={`cursor-pointer ${adminMode ? "font-bold" : ""}`}
-                onClick={handleManageCourseClick}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                <span>Manage Course</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className={`cursor-pointer ${adminMode ? "font-bold" : ""}`}
-                onClick={handleInviteMemberClick}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                <span>Invite Member</span>
-              </DropdownMenuItem>
-              <form action={handleSignOut} className="w-full">
-                <button type="submit" className="flex w-full">
-                  <DropdownMenuItem className="w-full flex-1 cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign out</span>
-                  </DropdownMenuItem>
-                </button>
-              </form>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        <div className="flex items-center space-x-4  ">
+          {user && (
+            <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="cursor-pointer size-9 pr-30">
+                  <AvatarImage alt={user.name || ""} />
+                  <AvatarFallback className="text-black">
+                    {user.email
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="flex flex-col gap-1">
+                <DropdownMenuItem
+                  className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                  onClick={handleManagePageClick}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Manage Page</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                  onClick={handleManageBlogsClick}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Manage Blogs</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                  onClick={handleManageCourseClick}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Manage Course</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className={`cursor-pointer
+                  ${adminMode ? "font-bold" : ""}`}
+                  onClick={handleInviteMemberClick}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Invite Member</span>
+                </DropdownMenuItem>
+                <form action={handleSignOut} className="w-full">
+                  <button type="submit" className="flex w-full">
+                    <DropdownMenuItem className="w-full flex-1 cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sign out</span>
+                    </DropdownMenuItem>
+                  </button>
+                </form>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </div>
     </div>
   );

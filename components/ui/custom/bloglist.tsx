@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { blogsType } from "@/lib/db/schema";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useUser } from "@/lib/auth";
-import Link from "next/link";
+import { Trash2, Edit } from "lucide-react";
+import { blogsType } from "@/lib/db/schema";
 
 interface BlogListProps {
   siteId: string;
@@ -15,53 +15,79 @@ const BlogList: React.FC<BlogListProps> = ({
   siteId: siteId,
   Blogs: initialBlogs,
 }) => {
-  const [Blogs, setBlogs] = useState<blogsType[]>(initialBlogs);
+  const [blogs, setBlogs] = useState<blogsType[]>(initialBlogs);
   const { user, setUser, adminMode, setAdminMode } = useUser();
-
   const router = useRouter();
+  const pathname = usePathname(); // Use usePathname to get the current path
+
+  // Check if the current path includes "admin"
+  const isAdminPath = pathname.includes("admin");
+  setAdminMode(isAdminPath);
+  let blogPath;
+  if (isAdminPath) blogPath = `manageblogs/BlogUpdate`;
+  else blogPath = `blogs`;
+  console.log("user", user);
+  console.log("adminMode", adminMode);
+  console.log("siteId", siteId);
 
   const handleCreateBlog = () => {
     router.push(`manageblogs/BlogCreate`);
   };
 
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Blogs</h1>
+  const handleDeleteBlog = () => {
+    //call delete course sarver action
+  };
 
+  return (
+    <div className="p-4 text-xsm">
+      <h1 className="text-2xl font-bold mb-4">Blogs</h1>
       {adminMode && (
         <div className="mt-4">
           <button
-            onClick={() => {
-              handleCreateBlog();
-            }}
-            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+            onClick={handleCreateBlog}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
           >
-            Create Blog
+            Create New Blog
           </button>
         </div>
       )}
 
-      <ul className="mt-4 space-y-4">
-        {Blogs.map((Blog) => (
+      {/*
+    
+      */}
+
+      <ul className="mt-4 space-y-2">
+        {blogs.map((blog) => (
           <li
-            key={Blog.name}
+            key={blog.id}
             className="flex justify-between items-center  border-b border-gray-300"
           >
-            <span
-              className="cursor-pointer text-blue-500 hover:underline"
-              onClick={() => router.push(`/blogs/${Blog.name}`)}
-            >
-              {Blog.name}
-            </span>
-            {adminMode && (
-              <button
-                onClick={() =>
-                  router.push(`manageblogs/BlogUpdate/${Blog.name}`)
-                }
-                className="bg-green-500 text-white px-4 py-2 rounded"
+            {adminMode ? (
+              <span>{blog.name}</span>
+            ) : (
+              <span
+                className="cursor-pointer text-blue-500 hover:underline"
+                onClick={() => router.push(`${blogPath}/${blog.name}`)}
               >
-                Edit
-              </button>
+                {blog.name}
+              </span>
+            )}
+            {adminMode && (
+              <div>
+                <button
+                  onClick={() => router.push(`${blogPath}/${blog.name}`)}
+                  className=" text-black px-4 py-2 rounded"
+                >
+                  <Edit />
+                </button>
+
+                <button
+                  onClick={handleDeleteBlog}
+                  className=" text-black px-4 py-2 rounded"
+                >
+                  <Trash2 />
+                </button>
+              </div>
             )}
           </li>
         ))}

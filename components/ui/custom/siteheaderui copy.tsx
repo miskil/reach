@@ -139,9 +139,9 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
   return (
     <header className="border-b border-gray-200 w-full">
       <AdminBar siteid={siteid} />
-      <div className="w-full max-w-7xl mx-auto ">
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         {/* Different layout approach - flex column on mobile, position relative on larger screens */}
-        <div className="w-full min-h-[10vh] sm:min-h-[12vh] flex flex-col sm:block relative ">
+        <div className="w-full min-h-[10vh] sm:min-h-[12vh] flex flex-col sm:block relative py-3 sm:py-4">
           {/* Site Icon - rendered first in mobile flow, positioned absolutely on larger screens */}
           <div className="flex justify-center mb-3 sm:mb-0 sm:absolute sm:left-4 md:left-6 sm:top-1/2 sm:-translate-y-1/2 sm:z-10">
             <div className="relative">
@@ -193,15 +193,15 @@ export default function SiteHeaderUI({ siteid, headerdata }: SiteHeaderProps) {
                     setHtml(html);
                     setIsDirty(true);
                   }}
-                  className="w-full min-h-[10vh] sm:min-h-[12vh] sm:pl-20 md:pl-28"
+                  className="w-full min-h-[10vh] sm:min-h-[10vh] sm:pl-20 md:pl-28"
                   onBkgImageFileChange={handleBkgImageFileChange}
                 />
               </div>
             ) : (
-              <RichTextPreview
-                html={content?.textHtml || ""}
-                contentStyle={content.contentStyle || {}}
-                className="w-full min-h-[10vh] sm:min-h-[12vh] sm:pl-20 md:pl-28"
+              <div
+                className="w-full min-h-[10vh] sm:min-h-[12vh] sm:pl-20 md:pl-28 py-2"
+                style={content.contentStyle}
+                dangerouslySetInnerHTML={{ __html: content.textHtml }}
               />
             )}
           </div>

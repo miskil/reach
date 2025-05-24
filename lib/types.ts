@@ -1,3 +1,5 @@
+import React from "react";
+
 export interface Topic {
   id: number;
   name: string | null;
@@ -54,18 +56,39 @@ export interface CourseProps {
   name: string;
   content_id: string;
   content: string;
+  contentStyle: React.CSSProperties;
+  bkgImageFile?: File | null;
+  width?: string;
+  height?: string;
 
   modules: {
     id?: string;
     name: string;
     content_id: string;
     content: string;
+    contentStyle: React.CSSProperties;
+    bkgImageFile?: File | null;
+    width?: string;
+    height?: string;
 
     topics: {
       id?: string;
       name: string;
       content_id: string;
       content: string;
+      contentStyle: React.CSSProperties;
+      bkgImageFile?: File | null;
+      width?: string;
+      height?: string;
     }[];
   }[];
+}
+
+export interface TextContent {
+  id: string;
+  textHtml: string;
+  contentStyle: React.CSSProperties;
+  bkgImageFile?: File | null;
+  width?: string;
+  height?: string;
 }
