@@ -24,10 +24,10 @@ export default async function SlugLayout({ children, params }: LayoutProps) {
       <div className="flex-shrink-0">
         <SiteHeader siteid={site!} HeaderUI={SiteHeaderUI} />
       </div>
-      <div className="flex-shrink-0">
+      {/*<div className="flex-shrink-0">
         <SiteMenus siteid={site!} menusdata={menus} />
       </div>
-
+        */}
       {/* Content fills remaining height */}
       <main className="flex-1 w-full overflow-auto">{children}</main>
     </section>

@@ -1,4 +1,21 @@
 import React, { useRef } from "react";
+import heic2any from "heic2any";
+
+const convertHEICtoJPG = async (file: File): Promise<File> => {
+  const convertedBlob = await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: 0.8,
+  });
+
+  return new File(
+    [convertedBlob as Blob],
+    file.name.replace(/\.heic$/i, ".jpg"),
+    {
+      type: "image/jpeg",
+    }
+  );
+};
 
 interface ButtonUploadProps {
   ButtonComponent: React.ComponentType;
@@ -17,11 +34,26 @@ const ButtonUpload: React.FC<ButtonUploadProps> = ({
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
-      onFileUpload(event.target.files[0]);
-      event.target.files = null;
-      event.target.value = "";
+      let uploadFile = event.target.files[0];
+
+      if (event.target.files[0].name.toLowerCase().endsWith(".heic")) {
+        try {
+          uploadFile = await convertHEICtoJPG(event.target.files[0]);
+          // Now upload `convertedFile` instead of `file`
+          onFileUpload(uploadFile);
+          event.target.value = "";
+        } catch (err) {
+          console.error("HEIC conversion failed", err);
+          return;
+        }
+      } else {
+        onFileUpload(event.target.files[0]);
+        event.target.value = "";
+      }
     }
   };
 
@@ -34,6 +66,7 @@ const ButtonUpload: React.FC<ButtonUploadProps> = ({
       </button>
       <input
         type="file"
+        accept="image/*"
         ref={fileInputRef}
         style={{ display: "none" }}
         onChange={handleFileChange}

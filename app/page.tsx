@@ -47,12 +47,39 @@ export default async function HomePage() {
                 users.
               </p>
               <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
-                <a href={nextURL}>
-                  <Button className="bg-white hover:bg-gray-100 text-black border border-gray-200 rounded-full text-lg px-8 py-4 inline-flex items-center justify-center">
-                    {user ? "Resume" : "Get Started"}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </a>
+                {user ? (
+                  <a href={nextURL}>
+                    <Button className="bg-white hover:bg-gray-100 text-black border border-gray-200 rounded-full text-lg px-8 py-4 inline-flex items-center justify-center">
+                      Resume
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </a>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="text-base text-gray-600">
+                      Already have an account?
+                    </div>
+                    <div className="text-base">
+                      <a
+                        href="./sign-in"
+                        className="text-blue-500 hover:underline"
+                      >
+                        Log in
+                      </a>
+                    </div>
+                    <div className="text-base text-gray-600">
+                      or to create new account
+                    </div>
+                    <div className="text-base">
+                      <a
+                        href="./sign-up"
+                        className="text-blue-500 hover:underline"
+                      >
+                        Register
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center"></div>

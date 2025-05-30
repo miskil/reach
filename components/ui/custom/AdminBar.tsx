@@ -14,7 +14,9 @@ import {
   LayoutTemplate,
   PanelsTopLeft,
   PanelTop,
+  SquarePen,
 } from "lucide-react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,33 +110,41 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
   };
 
   return (
-    <div className="w-full bg-black text-white px-4 py-1 flex flex-col md:flex-row md:items-center h-auto md:h-10 min-h-[2.5rem]">
+    <div className="w-full bg-grey text-gray-700 px-4 py-1 flex items-center justify-between h-auto md:h-10 min-h-[2.5rem]">
       {/* Left-side menu */}
-      <div className="flex flex-wrap md:flex-nowrap items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4 overflow-x-auto scrollbar-none">
         <button
           onClick={handlePageClick}
-          className={`flex items-center space-x-2 text-sm font-semibold hover:text-gray-300 ${
-            adminMode ? "text-white" : "text-gray-400"
-          }`}
+          className="flex flex-col md:flex-row items-center p-1 rounded-md hover:bg-gray-300"
         >
-          <LayoutTemplate className="h-4 w-4" />
-          <span>Pages</span>
+          <LayoutTemplate
+            className={`h-5 w-5 ${pathname.includes("/pages") ? "text-blue-400" : ""}`}
+          />
+          <span className="mt-0.5 md:mt-0 md:ml-2 text-[10px] md:text-sm font-medium">
+            Pages
+          </span>
         </button>
         <button
           onClick={handleBlogsClick}
-          className={`flex items-center space-x-2 text-sm font-semibold hover:text-gray-300 ${
-            adminMode ? "text-white" : "text-gray-400"
-          }`}
+          className="flex flex-col md:flex-row items-center p-1 rounded-md hover:bg-gray-300"
         >
-          <PanelTop className="h-4 w-4" />
-          <span>Blogs</span>
+          <PanelTop
+            className={`h-5 w-5 ${pathname.includes("/blogs") ? "text-blue-400" : ""}`}
+          />
+          <span className="mt-0.5 md:mt-0 md:ml-2 text-[10px] md:text-sm font-medium">
+            Blogs
+          </span>
         </button>
         <button
           onClick={handleCourseClick}
-          className="flex items-center space-x-2 text-sm font-semibold hover:text-gray-300"
+          className="flex flex-col md:flex-row items-center p-1 rounded-md hover:bg-gray-300"
         >
-          <PanelsTopLeft className="h-4 w-4" />
-          <span>Courses</span>
+          <PanelsTopLeft
+            className={`h-5 w-5 ${pathname.includes("/courses") ? "text-blue-400" : ""}`}
+          />
+          <span className="mt-0.5 md:mt-0 md:ml-2 text-[10px] md:text-sm font-medium">
+            Courses
+          </span>
         </button>
       </div>
 
@@ -143,16 +153,21 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
         {showModifySwitch && isAdminPath && (
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold">Modify</span>
-            <Switch.Root
-              className="w-12 h-6 bg-gray-400 rounded-full relative data-[state=checked]:bg-green-500 transition"
-              checked={modifyMode}
-              onCheckedChange={setModifyMode}
+            <button
+              onClick={() => setModifyMode(!modifyMode)}
+              className={`flex items-center justify-center p-1.5 rounded-md transition-colors ${
+                modifyMode
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-400 text-gray-700"
+              }`}
+              aria-pressed={modifyMode}
+              title={modifyMode ? "Modify mode on" : "Modify mode off"}
             >
-              <Switch.Thumb className="block w-5 h-5 bg-white rounded-full shadow-md transition-transform translate-x-0 data-[state=checked]:translate-x-6" />
-            </Switch.Root>
+              <SquarePen className="h-4 w-4" />
+            </button>
           </div>
         )}
-        {user && (
+        {user ? (
           <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <DropdownMenuTrigger asChild>
               <Avatar className="cursor-pointer size-9">
@@ -204,6 +219,13 @@ const AdminBar: React.FC<AdminBarProps> = ({ siteid }) => {
               </form>
             </DropdownMenuContent>
           </DropdownMenu>
+        ) : (
+          <a
+            href={`${BaseURL}/sign-in`}
+            className="inline-flex items-center justify-center rounded-md bg-gray-300 px-2 py-1 text-[10px] font-medium text-gray-700 hover:bg-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
+          >
+            Sign In
+          </a>
         )}
       </div>
     </div>

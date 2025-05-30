@@ -199,10 +199,10 @@ export default function CourseBuilder({
 
   /* ─────────────── UI layout ─────────────── */
   return (
-    <div className="md:flex h-screen">
+    <div className="md:flex h-screen relative">
       {/* mobile header */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b">
-        <h1 className="text-lg font-semibold">Course Builder</h1>
+      <div className="md:hidden flex items-center justify-between p-4">
+        <h1 className="text-lg font-semibold">{course.name}</h1>
         <Button
           size="icon"
           variant="ghost"
@@ -214,9 +214,15 @@ export default function CourseBuilder({
 
       {/* sidebar */}
       <aside
-        className={`md:block bg-gray-50 border-r md:w-1/3 w-full overflow-y-auto p-4 ${
-          sidebarOpen ? "block" : "hidden"
-        }`}
+        className={`
+    bg-white/80 backdrop-blur-sm border-r shadow-lg
+    transition-transform duration-300 ease-in-out z-30
+   h-[calc(100vh-4rem)]
+
+    md:relative md:top-0 md:w-1/3 md:translate-x-0 md:block
+    fixed top-20 left-0 w-3/4
+    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+  `}
       >
         {modifyMode && (
           <div className="flex justify-end mb-4">
@@ -225,8 +231,8 @@ export default function CourseBuilder({
         )}
 
         {/* course card */}
-        <Card className="rounded-2xl shadow-sm">
-          <CardContent className="p-4">
+        <div className="rounded-2xl shadow-sm">
+          <div className="p-4">
             <div className="flex justify-between items-center">
               {modifyMode ? (
                 <input
@@ -234,7 +240,7 @@ export default function CourseBuilder({
                   onChange={(e) =>
                     setCourse({ ...course, name: e.target.value })
                   }
-                  className="font-semibold border bg-white rounded px-2 py-1"
+                  className="font-semibold bg-white rounded px-2 py-1"
                 />
               ) : (
                 <h2
@@ -279,7 +285,7 @@ export default function CourseBuilder({
             {/* modules */}
             <div className="mt-4 space-y-4">
               {course.modules.map((m) => (
-                <div key={m.content_id} className="border rounded-lg p-3">
+                <div key={m.content_id} className="rounded-lg p-3 bg-gray-50">
                   <div className="flex justify-between items-center">
                     {modifyMode ? (
                       <input
@@ -294,7 +300,7 @@ export default function CourseBuilder({
                             ),
                           }))
                         }
-                        className="text-sm bg-white font-medium border rounded px-2 py-1"
+                        className="text-sm bg-white font-medium rounded px-2 py-1"
                       />
                     ) : (
                       <h3
@@ -372,7 +378,7 @@ export default function CourseBuilder({
                                 ),
                               }))
                             }
-                            className="border bg-white rounded px-2 py-1"
+                            className="bg-white rounded px-2 py-1"
                           />
                         ) : (
                           <span
@@ -413,12 +419,12 @@ export default function CourseBuilder({
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </aside>
 
       {/* editor pane */}
-      <main className="md:w-2/3 flex-1 p-4">
+      <main className="md:w-2/3 flex-1 p-4 ml-auto">
         {activeBlockId && renderBlockEditor(activeBlockId, activeBlockName!)}
       </main>
     </div>
