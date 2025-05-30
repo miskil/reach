@@ -217,8 +217,8 @@ export default function CourseBuilder({
         className={`
     bg-white/80 backdrop-blur-sm border-r shadow-lg
     transition-transform duration-300 ease-in-out z-30
-   h-[calc(100vh-4rem)]
-
+    overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100
+    h-[calc(100vh-4rem)]
     md:relative md:top-0 md:w-1/3 md:translate-x-0 md:block
     fixed top-20 left-0 w-3/4
     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
