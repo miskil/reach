@@ -130,7 +130,7 @@ export default function RegisterSite() {
                     required
                   />
                   <span className="inline-flex items-center justify-start pl-0 pr-3 text-gray-500 sm:text-sm">
-                    .reach.org
+                    .reachu.org
                   </span>
                 </div>
                 <Button
