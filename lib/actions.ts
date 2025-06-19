@@ -104,7 +104,6 @@ export type SiteDataInput = {
 /* Course Save */
 
 export async function saveCourse(siteId: string, courseData: CourseProps) {
-  // Check if a course with the same name already exists
   const existingCourse = await db
     .select({ id: course.id })
     .from(course)
@@ -112,37 +111,47 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
     .limit(1);
 
   if (existingCourse.length > 0) {
-    // Update the existing course
     const courseId = existingCourse[0].id;
 
-    // Update course content
     await db
       .update(course_content)
       .set({ content: courseData.content })
       .where(eq(course_content.id, courseData.content_id));
 
-    // Update course name
     await db
       .update(course)
       .set({ name: courseData.name })
       .where(eq(course.id, courseId));
 
-    // Update or insert modules
-    for (const module of courseData.modules) {
+    for (
+      let moduleIndex = 0;
+      moduleIndex < courseData.modules.length;
+      moduleIndex++
+    ) {
+      const module = courseData.modules[moduleIndex];
+
       if (module.id) {
-        // Update existing module
         await db
           .update(course_modules)
           .set({ name: module.name })
           .where(eq(course_modules.id, module.id));
 
-        // Update module content
         await db
           .update(course_content)
           .set({ content: module.content })
           .where(eq(course_content.id, module.content_id));
+
+        // 🆕 Update module link position
+        await db
+          .update(course_modules_link)
+          .set({ position: moduleIndex })
+          .where(
+            and(
+              eq(course_modules_link.course_id, courseId),
+              eq(course_modules_link.module_id, module.id)
+            )
+          );
       } else {
-        // Insert new module
         const moduleBlock = await db
           .insert(course_content)
           .values({ siteId: siteId, content: module.content })
@@ -160,32 +169,45 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
           .returning()
           .then((res) => res[0]);
 
-        // Link module to course
         await db.insert(course_modules_link).values({
           course_id: courseId,
           site_id: siteId,
           module_id: moduleRecord.id,
+          position: moduleIndex, // 🆕
         });
 
-        module.id = moduleRecord.id; // Update module ID for topics
+        module.id = moduleRecord.id;
       }
 
-      // Update or insert topics
-      for (const topic of module.topics) {
+      for (
+        let topicIndex = 0;
+        topicIndex < module.topics.length;
+        topicIndex++
+      ) {
+        const topic = module.topics[topicIndex];
+
         if (topic.id) {
-          // Update existing topic
           await db
             .update(course_topics)
             .set({ name: topic.name })
             .where(eq(course_topics.id, topic.id));
 
-          // Update topic content
           await db
             .update(course_content)
             .set({ content: topic.content })
             .where(eq(course_content.id, topic.content_id));
+
+          // 🆕 Update topic link position
+          await db
+            .update(course_module_topics_link)
+            .set({ position: topicIndex })
+            .where(
+              and(
+                eq(course_module_topics_link.module_id, module.id),
+                eq(course_module_topics_link.topic_id, topic.id)
+              )
+            );
         } else {
-          // Insert new topic
           const topicBlock = await db
             .insert(course_content)
             .values({ siteId: siteId, content: topic.content })
@@ -203,11 +225,11 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
             .returning()
             .then((res) => res[0]);
 
-          // Link topic to module
           await db.insert(course_module_topics_link).values({
             module_id: module.id,
             site_id: siteId,
             topic_id: topicRecord.id,
+            position: topicIndex, // 🆕
           });
         }
       }
@@ -215,7 +237,7 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
     return { success: true };
   }
 
-  // Save title block
+  // New course creation
   const courseContent = await db
     .insert(course_content)
     .values({ siteId: siteId, content: courseData.content })
@@ -232,7 +254,13 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
     .returning()
     .then((res) => res[0]);
 
-  for (const module of courseData.modules) {
+  for (
+    let moduleIndex = 0;
+    moduleIndex < courseData.modules.length;
+    moduleIndex++
+  ) {
+    const module = courseData.modules[moduleIndex];
+
     const moduleBlock = await db
       .insert(course_content)
       .values({ siteId: siteId, content: module.content })
@@ -250,14 +278,16 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
       .returning()
       .then((res) => res[0]);
 
-    // Link module to title
     await db.insert(course_modules_link).values({
       course_id: titleRecord.id,
       site_id: siteId,
       module_id: moduleRecord.id,
+      position: moduleIndex, // 🆕
     });
 
-    for (const topic of module.topics) {
+    for (let topicIndex = 0; topicIndex < module.topics.length; topicIndex++) {
+      const topic = module.topics[topicIndex];
+
       const topicBlock = await db
         .insert(course_content)
         .values({ siteId: siteId, content: topic.content })
@@ -275,11 +305,11 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
         .returning()
         .then((res) => res[0]);
 
-      // Link topic to module
       await db.insert(course_module_topics_link).values({
         module_id: moduleRecord.id,
         site_id: siteId,
         topic_id: topicRecord.id,
+        position: topicIndex, // 🆕
       });
     }
   }
@@ -298,7 +328,7 @@ export async function getFullCourse(siteId: string, courseId: string) {
     })
     .from(course)
     .leftJoin(course_content, eq(course.content_id, course_content.id))
-    .where(eq(course.id, course_content.id) && eq(course.site_id, siteId));
+    .where(and(eq(course.id, courseId), eq(course.site_id, siteId)));
 
   if (!course_rec) return null;
 
@@ -306,7 +336,8 @@ export async function getFullCourse(siteId: string, courseId: string) {
   const linkedModules = await db
     .select({ module_id: course_modules_link.module_id })
     .from(course_modules_link)
-    .where(eq(course_modules_link.course_id, course_rec[0].id));
+    .where(eq(course_modules_link.course_id, course_rec[0].id))
+    .orderBy(course_modules_link.position);
 
   const moduleIds = linkedModules.map((m) => m.module_id);
   if (moduleIds.length === 0) return { ...course, modules: [] };
@@ -343,7 +374,8 @@ export async function getFullCourse(siteId: string, courseId: string) {
         ),
         eq(course_module_topics_link.site_id, siteId)
       )
-    );
+    )
+    .orderBy(course_module_topics_link.position);
 
   const topicIds = moduleTopicLinks.map((link) => link.topic_id);
 

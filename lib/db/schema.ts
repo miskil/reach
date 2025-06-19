@@ -146,12 +146,14 @@ export const course_modules_link = pgTable("course_modules_link", {
   site_id: varchar("site_id").references(() => tenants.tenant),
 
   module_id: uuid("module_id").references(() => course_modules.id),
+  position: integer("position").notNull().default(0),
 });
 
 export const course_module_topics_link = pgTable("course_module_topics_link", {
   module_id: uuid("module_id").references(() => course_modules.id),
   site_id: varchar("site_id").references(() => tenants.tenant),
   topic_id: uuid("topic_id").references(() => course_topics.id),
+  position: integer("position").notNull().default(0),
 });
 
 // db/schema/members.ts
