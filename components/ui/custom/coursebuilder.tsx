@@ -57,6 +57,7 @@ export default function CourseBuilder({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { modifyMode } = useUser();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [deletedItems, setDeletedItems] = useState<{
     courses: string[];
     modules: string[];
@@ -113,6 +114,8 @@ export default function CourseBuilder({
   /* ─────────────── switch editor after flush ─────────────── */
   const handleBlockClick = (id: string, name: string) => {
     // Let any pending setCourse finish, then switch
+    setActiveItemId(id); // Set the clicked item's ID as active
+
     setTimeout(() => {
       setActiveBlockId(id);
       setActiveBlockName(name);
@@ -393,7 +396,11 @@ export default function CourseBuilder({
                 />
               ) : (
                 <h2
-                  className="font-semibold cursor-pointer"
+                  className={`text-sm font-medium cursor-pointer ${
+                    activeItemId === course.content_id
+                      ? "text-blue-600"
+                      : "text-gray-800"
+                  }`}
                   onClick={() =>
                     handleBlockClick(course.content_id, course.name)
                   }
@@ -453,7 +460,11 @@ export default function CourseBuilder({
                       />
                     ) : (
                       <h3
-                        className="text-sm font-medium cursor-pointer"
+                        className={`text-sm font-medium cursor-pointer ${
+                          activeItemId === m.content_id
+                            ? "text-blue-600"
+                            : "text-gray-800"
+                        }`}
                         onClick={() => handleBlockClick(m.content_id, m.name)}
                       >
                         {m.name}
@@ -544,7 +555,11 @@ export default function CourseBuilder({
                           />
                         ) : (
                           <span
-                            className="cursor-pointer"
+                            className={`cursor-pointer ${
+                              activeItemId === t.content_id
+                                ? "text-blue-600"
+                                : "text-gray-800"
+                            }`}
                             onClick={() =>
                               handleBlockClick(t.content_id, t.name)
                             }
