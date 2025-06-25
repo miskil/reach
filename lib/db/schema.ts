@@ -126,7 +126,9 @@ export const course_modules = pgTable("course_modules", {
   id: uuid("id").primaryKey().defaultRandom(),
   site_id: varchar("site_id").references(() => tenants.tenant),
 
-  course_id: uuid("course_id").references(() => course.id),
+  course_id: uuid("course_id").references(() => course.id, {
+    onDelete: "cascade",
+  }),
   name: text("name").notNull(),
   content_id: uuid("content_id").references(() => course_content.id),
 });
@@ -135,24 +137,34 @@ export const course_topics = pgTable("course_topics", {
   id: uuid("id").primaryKey().defaultRandom(),
   site_id: varchar("site_id").references(() => tenants.tenant),
 
-  module_id: uuid("module_id").references(() => course_modules.id),
+  module_id: uuid("module_id").references(() => course_modules.id, {
+    onDelete: "cascade",
+  }),
   name: text("name").notNull(),
   content_id: uuid("content_id").references(() => course_content.id),
 });
 
 // Relations
 export const course_modules_link = pgTable("course_modules_link", {
-  course_id: uuid("course_id").references(() => course.id),
+  course_id: uuid("course_id").references(() => course.id, {
+    onDelete: "cascade",
+  }),
   site_id: varchar("site_id").references(() => tenants.tenant),
 
-  module_id: uuid("module_id").references(() => course_modules.id),
+  module_id: uuid("module_id").references(() => course_modules.id, {
+    onDelete: "cascade",
+  }),
   position: integer("position").notNull().default(0),
 });
 
 export const course_module_topics_link = pgTable("course_module_topics_link", {
-  module_id: uuid("module_id").references(() => course_modules.id),
+  module_id: uuid("module_id").references(() => course_modules.id, {
+    onDelete: "cascade",
+  }),
   site_id: varchar("site_id").references(() => tenants.tenant),
-  topic_id: uuid("topic_id").references(() => course_topics.id),
+  topic_id: uuid("topic_id").references(() => course_topics.id, {
+    onDelete: "cascade",
+  }),
   position: integer("position").notNull().default(0),
 });
 

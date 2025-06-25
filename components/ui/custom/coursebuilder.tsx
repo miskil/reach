@@ -4,12 +4,35 @@ import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Eye, Copy, Clipboard, Menu } from "lucide-react";
+import {
+  Plus,
+  Eye,
+  Copy,
+  Clipboard,
+  Menu,
+  Trash2,
+  Loader2,
+} from "lucide-react";
 import { CourseProps } from "@/lib/types";
 import { saveCourse } from "@/lib/actions";
 import { useUser } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+import { deleteCourse, deleteModule, deleteTopic } from "@/lib/actions";
+
 import RichEditor from "./richEditor";
 import RichTextPreview from "./RichTextPreview";
+import toast from "react-hot-toast";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 /*import quillModules from "@/lib/quillConfig"; // Assuming you have a quillModules file for the toolbar configuration
 
 //const ReactQuill: any = dynamic(() => import("react-quill-new"), {
@@ -33,20 +56,24 @@ export default function CourseBuilder({
   const [copiedItem, setCopiedItem] = useState<any | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { modifyMode } = useUser();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletedItems, setDeletedItems] = useState<{
+    courses: string[];
+    modules: string[];
+    topics: string[];
+  }>({
+    courses: [],
+    modules: [],
+    topics: [],
+  });
 
-  /* ─────────────── quill toolbar ─────────────── 
-  const modules = {
-    toolbar: [
-      [{ header: "1" }, { header: "2" }, { font: [] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["bold", "italic", "underline", "strike"],
-      [{ align: [] }],
-      ["link", "blockquote", "code-block"],
-      [{ color: ["#f00", "#0f0", "#00f", "#ff0"] }, { background: [] }],
-      ["image"],
-    ],
-  };
-*/
+  const router = useRouter();
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState<{
+    type: "course" | "module" | "topic";
+    id: string;
+  } | null>(null);
+
   const courseEditorId = `course-editorId-${siteId}`;
   const modules = useMemo(
     () => ({
@@ -95,12 +122,131 @@ export default function CourseBuilder({
   /* ─────────────── save entire course (button) ───────────── */
   const handleSaveCourse = async () => {
     try {
+      // First, handle deletions
+      for (const courseId of deletedItems.courses) {
+        await handleDeleteCourse(courseId);
+      }
+      for (const moduleId of deletedItems.modules) {
+        await handleDeleteModule(moduleId);
+      }
+      for (const topicId of deletedItems.topics) {
+        await handleDeleteTopic(topicId);
+      }
       await saveCourse(siteId, course);
       console.log("Course saved!");
       alert("Course saved!");
     } catch (err) {
       console.error(err);
       alert(err);
+    }
+  };
+  const handleFrontendDelete = (
+    type: "course" | "module" | "topic",
+    id: string
+  ) => {
+    const isExisting = (type: "module" | "topic", id: string) => {
+      if (type === "module") {
+        return !id.startsWith("module-temp-id"); // Existing if it does NOT start with "module-temp-id"
+      } else if (type === "topic") {
+        return !id.startsWith("topic-temp-id"); // Existing if it does NOT start with "topic-temp-id"
+      }
+      return false; // Default case (shouldn't happen)
+    };
+    if (type === "module" || type === "topic") {
+      if (isExisting(type, id)) {
+        setDeletedItems((prev) => ({
+          ...prev,
+          [type === "module" ? "modules" : "topics"]: [
+            ...prev[type === "module" ? "modules" : "topics"],
+            id,
+          ],
+        }));
+      }
+    } else if (type === "course") {
+      setDeletedItems((prev) => ({
+        ...prev,
+        courses: [...prev.courses, id],
+      }));
+    }
+
+    // Remove the item from the visible course object
+    if (type === "course") {
+      setCourse({
+        ...course,
+        name: "",
+        content: "",
+        modules: [],
+      });
+    } else if (type === "module") {
+      setCourse((prev) => ({
+        ...prev,
+        modules: [...prev.modules].filter((module) => module.id !== id),
+      }));
+    } else if (type === "topic") {
+      setCourse((prev) => ({
+        ...prev,
+        modules: prev.modules.map((module) => ({
+          ...module,
+          topics: [...module.topics].filter((topic) => topic.id !== id),
+        })),
+      }));
+    }
+  };
+
+  async function handleDeleteCourse(courseId: string) {
+    const result = await deleteCourse(siteId, courseId);
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to delete course");
+    }
+  }
+  async function handleDeleteModule(moduleId: string) {
+    if (!moduleId) return;
+    const result = await deleteModule(siteId, moduleId);
+    if (!result.success) {
+      throw new Error(result.error || "Failed to delete Module");
+    }
+  }
+
+  async function handleDeleteTopic(topicId: string) {
+    if (!topicId) return;
+    const result = await deleteTopic(siteId, topicId);
+    if (!result.success) {
+      throw new Error(result.error || "Failed to delete Topic");
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!showDeleteDialog) return; // Ensure there is a valid dialog state
+
+    try {
+      setIsDeleting(true);
+
+      // Call the appropriate delete function based on the type
+      if (showDeleteDialog.type === "course") {
+        await handleDeleteCourse(showDeleteDialog.id); // Delete the course
+      } else if (showDeleteDialog.type === "module") {
+        await handleDeleteModule(showDeleteDialog.id); // Delete the module
+      } else if (showDeleteDialog.type === "topic") {
+        await handleDeleteTopic(showDeleteDialog.id); // Delete the topic
+      }
+
+      // Show success toast
+      toast.success("Deleted successfully");
+
+      // Refresh or update the UI
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting:", error);
+
+      // Show error toast
+
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      toast.error(`Error deleting course: ${errorMessage}`);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(null); // Close the dialog
     }
   };
 
@@ -128,6 +274,8 @@ export default function CourseBuilder({
       modules: [
         ...(p.modules || []),
         {
+          id: "module-temp-id-" + Date.now(),
+
           name: "New Module",
           content_id: `module-content-${Date.now()}`,
           content: "",
@@ -151,6 +299,7 @@ export default function CourseBuilder({
               topics: [
                 ...m.topics,
                 {
+                  id: "topic-temp-id-" + Date.now(),
                   name: "New Topic",
                   content_id: `topic-content-${Date.now()}`,
                   content: "",
@@ -346,6 +495,19 @@ export default function CourseBuilder({
                           >
                             <Plus className="w-4 h-4" />
                           </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() =>
+                              setShowDeleteDialog({
+                                type: "module",
+                                id: m.id ?? "",
+                              })
+                            }
+                            className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </>
                       )}
                     </div>
@@ -412,6 +574,21 @@ export default function CourseBuilder({
                               <Copy className="w-4 h-4" />
                             </Button>
                           )}
+                          {modifyMode && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() =>
+                                setShowDeleteDialog({
+                                  type: "topic",
+                                  id: t.id ?? "",
+                                })
+                              }
+                              className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </li>
                     ))}
@@ -421,6 +598,46 @@ export default function CourseBuilder({
             </div>
           </div>
         </div>
+        <AlertDialog
+          open={!!showDeleteDialog}
+          onOpenChange={() => setShowDeleteDialog(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Delete {showDeleteDialog?.type}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this {showDeleteDialog?.type}?
+                This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setShowDeleteDialog(null)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() =>
+                  handleFrontendDelete(
+                    showDeleteDialog!.type,
+                    showDeleteDialog!.id
+                  )
+                }
+                className="bg-red-600 hover:bg-red-700 text-white"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </aside>
 
       {/* editor pane */}

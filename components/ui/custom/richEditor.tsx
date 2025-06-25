@@ -250,7 +250,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, Props>(
         <div className="flex flex-wrap items-center gap-2 p-2 border-b bg-gray-50 dark:bg-gray-700">
           <select
             onChange={(e) => exec("fontName", e.target.value)}
-            className="text-sm border rounded px-1"
+            className="text-sm border bg-white rounded px-1"
           >
             {["Arial", "Times New Roman", "Courier New", "Verdana"].map((f) => (
               <option key={f} value={f}>
@@ -260,7 +260,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, Props>(
           </select>
           <select
             onChange={(e) => exec("fontSize", e.target.value)}
-            className="text-sm border rounded px-1"
+            className="text-sm border rounded bg-white px-1"
           >
             {[1, 2, 3, 4, 5, 6, 7].map((s) => (
               <option key={s} value={s}>{`Size ${s}`}</option>

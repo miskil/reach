@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
 export function subdomainURL(siteId: string, relURL: string) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
   const [httpvar, hostroot] = baseUrl.split("//");

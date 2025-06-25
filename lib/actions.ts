@@ -130,6 +130,11 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
     ) {
       const module = courseData.modules[moduleIndex];
 
+      // Check if the module already exists
+      if (module.id?.startsWith("module-temp-id")) {
+        // If the module is a temporary ID, we need to create a new module
+        module.id = undefined; // Reset the ID to create a new record
+      }
       if (module.id) {
         await db
           .update(course_modules)
@@ -185,6 +190,10 @@ export async function saveCourse(siteId: string, courseData: CourseProps) {
         topicIndex++
       ) {
         const topic = module.topics[topicIndex];
+        if (topic.id?.startsWith("topic-temp-id")) {
+          // If the topic is a temporary ID, we need to create a new topic
+          topic.id = undefined; // Reset the ID to create a new record
+        }
 
         if (topic.id) {
           await db
@@ -428,6 +437,47 @@ export async function getFullCourse(siteId: string, courseId: string) {
 
     modules: modulesStructured,
   };
+}
+
+export async function deleteCourse(siteId: string, courseId: string) {
+  try {
+    await db
+      .delete(course)
+      .where(and(eq(course.id, courseId), eq(course.site_id, siteId)));
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    return { success: false, error: String(error) };
+  }
+
+  return { success: true, error: String("") };
+}
+export async function deleteModule(siteId: string, moduleId: string) {
+  try {
+    await db
+      .delete(course_modules)
+      .where(
+        and(eq(course_modules.id, moduleId), eq(course_modules.site_id, siteId))
+      );
+  } catch (error) {
+    console.error("Error deleting module:", error);
+    return { success: false, error: String(error) };
+  }
+
+  return { success: true, error: String("") };
+}
+export async function deleteTopic(siteId: string, topicId: string) {
+  try {
+    await db
+      .delete(course_topics)
+      .where(
+        and(eq(course_topics.id, topicId), eq(course_topics.site_id, siteId))
+      );
+  } catch (error) {
+    console.error("Error deleting topic:", error);
+    return { success: false, error: String(error) };
+  }
+
+  return { success: true, error: String("") };
 }
 
 // Function to get siteId - a placeholder for your siteId fetch logic

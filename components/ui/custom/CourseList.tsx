@@ -3,7 +3,22 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useUser } from "@/lib/auth";
-import { Trash2, Edit } from "lucide-react";
+import { Trash2, Edit, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+
+import { deleteCourse } from "@/lib/actions";
+import { subdomainURL } from "@/lib/utils";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CourseListProps {
   siteId: string;
@@ -17,6 +32,8 @@ const CourseList: React.FC<CourseListProps> = ({
   const [courses, setCourses] =
     useState<{ name: string; id: string }[]>(initialCourses);
   const { user, setUser, adminMode, setAdminMode } = useUser();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const pathname = usePathname(); // Use usePathname to get the current path
 
@@ -34,8 +51,36 @@ const CourseList: React.FC<CourseListProps> = ({
     router.push(`managecourse/createCourse`);
   };
 
-  const handleDeleteCourse = () => {
-    //call delete course sarver action
+  const handleDeleteCourse = async (course_id: string) => {
+    try {
+      setIsDeleting(true);
+
+      // Call the server action to delete the course
+      const result = await deleteCourse(siteId, course_id);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete course");
+      }
+
+      toast.success("Course deleted successfully");
+      // Update the courses state to remove the deleted course
+      setCourses((prevCourses) =>
+        prevCourses.filter((course) => course.id !== course_id)
+      );
+
+      // Redirect to courses list page
+      const gotoPath = subdomainURL(siteId, "admin/managecourse");
+      router.push(gotoPath);
+      router.refresh(); // Refresh the router to ensure data is up-to-date
+    } catch (error) {
+      console.error("Error deleting course:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      toast.error(`Error deleting course: ${errorMessage}`);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   return (
@@ -82,11 +127,48 @@ const CourseList: React.FC<CourseListProps> = ({
                 </button>
 
                 <button
-                  onClick={handleDeleteCourse}
+                  onClick={() => setShowDeleteDialog(true)}
                   className=" text-black px-4 py-2 rounded"
                 >
                   <Trash2 />
                 </button>
+                {/* Confirmation Dialog */}
+                <AlertDialog
+                  open={showDeleteDialog}
+                  onOpenChange={setShowDeleteDialog}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Course</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{course.name}"? This
+                        action cannot be undone. All course content and
+                        associated data will be permanently deleted.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel
+                        onClick={() => setShowDeleteDialog(false)}
+                      >
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDeleteCourse(course.id)} // Pass course.id to deleteCourse
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          "Delete"
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
           </li>
